@@ -6,7 +6,168 @@
 <!--editor-->
 <!--salvar pela ia-->
 <!--galeria-->
+<!DOCTYPE html>
+<html lang="pt-BR">
 
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IILUME - Galeria</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Nosso CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- TELA DA GALERIA -->
+<main id="gallery_screen" class="min-h-screen bg-black text-white">
+
+    <!-- CABEÇALHO -->
+    <header class="flex items-center justify-between px-5 py-5">
+
+        <button
+                id="back_button"
+                class="text-2xl"
+                aria-label="Voltar">
+            ←
+        </button>
+
+        <h1 class="text-xl font-semibold tracking-widest">
+            IILUME
+        </h1>
+
+        <div class="w-6"></div>
+
+    </header>
+
+
+    <!-- TÍTULO -->
+    <section class="px-5 pt-2">
+
+        <p class="text-sm text-zinc-400">
+            Sua galeria
+        </p>
+
+        <h2 class="text-3xl font-bold">
+            Galeria IILUME
+        </h2>
+
+    </section>
+
+
+    <!-- FOTO PRINCIPAL -->
+    <section class="px-5 py-6">
+
+        <div
+                id="main_image_container"
+                class="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900">
+
+            <img
+                    id="main_image"
+                    src="assets/imagens/galeria/foto 1.jpg"
+                    alt="Foto selecionada"
+                    class="h-[55vh] w-full object-cover">
+
+        </div>
+
+    </section>
+
+
+    <!-- INFORMAÇÕES -->
+    <section
+            id="photo_info"
+            class="hidden px-5 pb-4">
+
+        <div class="rounded-2xl bg-zinc-900 p-4">
+
+            <h3 class="mb-2 font-semibold">
+                Informações da foto
+            </h3>
+
+            <p class="text-sm text-zinc-400">
+                Foto processada pelo IILUME
+            </p>
+
+            <p
+                    id="photo_name"
+                    class="mt-2 text-sm">
+                foto1.jpg
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- AÇÕES -->
+    <section class="flex justify-center gap-4 px-5">
+
+        <!-- Favoritar -->
+        <button
+                id="favorite_button"
+                class="gallery_action"
+                title="Favoritar">
+            ☆
+        </button>
+
+        <!-- Informações -->
+        <button
+                id="info_button"
+                class="gallery_action"
+                title="Informações">
+            ℹ
+        </button>
+
+        <!-- Compartilhar -->
+        <button
+                id="share_button"
+                class="gallery_action"
+                title="Compartilhar">
+            ↗
+        </button>
+
+        <!-- Excluir -->
+        <button
+                id="delete_button"
+                class="gallery_action"
+                title="Excluir">
+            🗑
+        </button>
+
+    </section>
+
+
+    <!-- MINIATURAS -->
+    <section class="px-5 py-6">
+
+        <h3 class="mb-3 text-sm text-zinc-400">
+            Suas fotos
+        </h3>
+
+        <div
+                id="thumbnail_container"
+                class="flex gap-3 overflow-x-auto pb-2">
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<!-- JavaScript -->
+<script src="js/script.js"></script>
+
+</body>
+
+</html>
 <!--dimencoes-->
 width: 1200px
 height: 800px
@@ -19,6 +180,7 @@ height: 800px
     p-5
     backdrop-blur
 ">
+</div>
 
 <!--botao 1º-->
 <button
