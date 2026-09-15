@@ -27,42 +27,6 @@ let galleryPhotos = [
         favorite: false
     },
 
-    {
-        name: "foto5.jpg",
-        src: "assets/images/gallery/foto5.jpg",
-        favorite: false
-    },
-
-    {
-        name: "foto6.jpg",
-        src: "assets/images/gallery/foto6.jpg",
-        favorite: false
-    },
-
-    {
-        name: "foto7.jpg",
-        src: "assets/images/gallery/foto7.jpg",
-        favorite: false
-    },
-
-    {
-        name: "foto8.jpg",
-        src: "assets/images/gallery/foto8.jpg",
-        favorite: false
-    },
-
-    {
-        name: "foto9.jpg",
-        src: "assets/images/gallery/foto9.jpg",
-        favorite: false
-    },
-
-    {
-        name: "foto10.jpg",
-        src: "assets/images/gallery/foto10.jpg",
-        favorite: false
-    }
-
 ];
 
 /* FOTO ATUAL */
