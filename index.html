@@ -8,192 +8,173 @@
 <!--galeria-->
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>IILUME - Galeria</title>
-
-    <!-- Tailwind CSS -->
+    <title>Galeria IILUME</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Nosso CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-<!-- TELA DA GALERIA -->
-<main id="gallery_screen" class="min-h-screen bg-black text-white">
-
-    <!-- CABEÇALHO -->
-    <header class="flex items-center justify-between px-5 py-5">
-
+<div class="phone">
+    <header class="phone-header">
+        <!-- Botão voltar -->
         <button
                 id="back_button"
-                class="text-2xl"
+                class="header-button"
                 aria-label="Voltar">
-            ←
+            <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2">
+                <path
+                        d="M15 18L9 12L15 6">
+                </path>
+            </svg>
         </button>
 
-        <h1 class="text-xl font-semibold tracking-widest">
-            IILUME
+        <!-- Título -->
+        <h1>
+            Galeria IILUME
         </h1>
 
-        <div class="w-6"></div>
-
+        <!-- Editar -->
+        <button
+                id="edit_button"
+                class="edit-button">
+            Editar
+        </button>
     </header>
 
-
-    <!-- TÍTULO -->
-    <section class="px-5 pt-2">
-
-        <p class="text-sm text-zinc-400">
-            Sua galeria
-        </p>
-
-        <h2 class="text-3xl font-bold">
-            Galeria IILUME
-        </h2>
-
-    </section>
-
-
     <!-- FOTO PRINCIPAL -->
-    <section class="px-5 py-6">
-
-        <div
-                id="main_image_container"
-                class="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900">
-
-            <img
-                    id="main_image"
-                    src="assets/images/gallery/foto1.jpg"
-                    alt="Foto selecionada"
-                    class="h-[55vh] w-full object-cover">
-
-        </div>
-
+    <section class="main-photo">
+        <img
+                id="main_image"
+                src="assets/images/gallery/foto1.jpg"
+                alt="Foto selecionada">
     </section>
 
-
-    <!-- INFORMAÇÕES -->
+    <!-- MINIATURAS-->
     <section
-            id="photo_info"
-            class="hidden px-5 pb-4">
-
-        <div class="rounded-2xl bg-zinc-900 p-4">
-
-            <h3 class="mb-2 font-semibold">
-                Informações da foto
-            </h3>
-
-            <p class="text-sm text-zinc-400">
-                Foto processada pelo IILUME
-            </p>
-
-            <p
-                    id="photo_name"
-                    class="mt-2 text-sm">
-                foto1.jpg
-            </p>
-
-        </div>
-
+            id="thumbnail_container"
+            class="thumbnails">
     </section>
 
-
-    <!-- AÇÕES -->
-    <section class="flex justify-center gap-4 px-5">
-
-        <!-- Favoritar -->
-        <button
-                id="favorite_button"
-                class="gallery_action"
-                title="Favoritar">
-            ☆
-        </button>
-
-        <!-- Informações -->
-        <button
-                id="info_button"
-                class="gallery_action"
-                title="Informações">
-            ℹ
-        </button>
-
-        <!-- Compartilhar -->
+    <nav class="bottom-actions">
+        <!-- COMPARTILHAR -->
         <button
                 id="share_button"
-                class="gallery_action"
-                title="Compartilhar">
-            ↗
+                class="action-button"
+                aria-label="Compartilhar">
+
+            <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8">
+                <path
+                        d="M12 16V4">
+                </path>
+                <path
+                        d="M7 9L12 4L17 9">
+                </path>
+                <path
+                        d="M5 14V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V14">
+                </path>
+            </svg>
         </button>
 
-        <!-- Excluir -->
+        <!-- FAVORITO -->
+        <button
+                id="favorite_button"
+                class="action-button"
+                aria-label="Favoritar">
+            <svg
+                    id="heart_icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8">
+                <path
+                        d="M20.8 8.8C20.8 13.5 12 19 12 19S3.2 13.5 3.2 8.8C3.2 6.1 5.2 4 7.8 4C9.4 4 10.8 4.8 12 6.1C13.2 4.8 14.6 4 16.2 4C18.8 4 20.8 6.1 20.8 8.8Z">
+                </path>
+            </svg>
+        </button>
+
+        <!-- INFORMAÇÕES -->
+        <button
+                id="info_button"
+                class="action-button"
+                aria-label="Informações">
+            <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8">
+                <circle
+                        cx="12"
+                        cy="12"
+                        r="9">
+                </circle>
+                <path
+                        d="M12 10V16">
+                </path>
+                <circle
+                        cx="12"
+                        cy="7"
+                        r="0.8"
+                        fill="currentColor">
+                </circle>
+            </svg>
+        </button>
+
+
+        <!-- EXCLUIR -->
         <button
                 id="delete_button"
-                class="gallery_action"
-                title="Excluir">
-            🗑
+                class="action-button"
+                aria-label="Excluir">
+            <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8">
+                <path
+                        d="M4 7H20">
+                </path>
+                <path
+                        d="M9 7V4H15V7">
+                </path>
+                <path
+                        d="M7 7L8 20H16L17 7">
+                </path>
+            </svg>
         </button>
+    </nav>
 
-    </section>
+    <!-- BARRA INFERIOR DO CELULAR-->
+    <div class="home-indicator"></div>
 
+    <!-- INFORMAÇÕES DA FOTO-->
+    <div
+            id="photo_info"
+            class="photo-info hidden">
+        <h2>
+            Informações
+        </h2>
+        <p id="photo_name">
+            foto1.jpg
+        </p>
+        <p>
+            Imagem processada pelo IILUME
+        </p>
+    </div>
 
-    <!-- MINIATURAS -->
-    <section class="px-5 py-6">
-
-        <h3 class="mb-3 text-sm text-zinc-400">
-            Suas fotos
-        </h3>
-
-        <div
-                id="thumbnail_container"
-                class="flex gap-3 overflow-x-auto pb-2">
-
-        </div>
-
-    </section>
-
-
-</main>
-
+</div>
 
 <!-- JavaScript -->
 <script src="js/script.js"></script>
-
 </body>
-
 </html>
-<!--dimencoes-->
-width: 1200px
-height: 800px
-
-<!--cards-->
-<div class="
-    rounded-3xl
-    border border-zinc-800
-    bg-zinc-900/70
-    p-5
-    backdrop-blur
-">
-</div>
-
-<!--botao 1º-->
-<button
-        class="rounded-full bg-gradient-to-r from-cyan-400 to-violet-600
-           px-6 py-3 font-semibold text-white
-           transition hover:scale-105">
-    Começar
-</button>
-
-<!--botao 2º-->
-<button
-        class="rounded-full border border-zinc-700
-           px-5 py-3 text-white
-           transition hover:bg-zinc-800">
-    Cancelar
-</button>
