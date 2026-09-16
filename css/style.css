@@ -1,3 +1,246 @@
+
+/* INTEGRAÇÃO ENTRE OS COMPONENTES */
+.iilume-screen {
+    display: none !important;
+}
+
+.iilume-screen.camera-screen.active {
+    display: flex !important;
+}
+
+.iilume-screen.gallery-screen.active {
+    display: block !important;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#cam-thumb-placeholder {
+    cursor: pointer;
+}
+
+
+/* ===== CÂMERA ===== */
+:root {
+    --cam-bg: #050508;
+    --cam-cyan: #00f0ff;
+    --cam-blue: #0088ff;
+}
+
+/* Isolamento e Estrutura Geral */
+.cam-unselectable {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.cam-container {
+    width: 100vw;
+    max-width: 414px;
+    height: 100vh;
+    max-height: 896px;
+    background-color: var(--cam-bg);
+    border-radius: 40px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.cam-status-bar { height: 44px; z-index: 20; }
+.cam-dynamic-island { width: 110px; height: 28px; }
+.cam-top-bar { z-index: 20; }
+
+.cam-icon-circle {
+    width: 34px;
+    height: 34px;
+    background: rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cam-indicator-badge {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--cam-cyan);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+}
+
+/* Viewfinder e Enquadramentos de Zoom */
+.cam-viewfinder { background-color: #0d0e12; }
+.cam-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease;
+}
+
+.cam-zoom-13mm { transform: scale(1.0); } /* 0,5x */
+.cam-zoom-26mm { transform: scale(1.4); } /* 1x */
+.cam-zoom-77mm { transform: scale(2.2); } /* 3x */
+
+/* Animações de Transição */
+.cam-flip-anim {
+    animation: camFlip 0.5s ease-in-out;
+}
+
+@keyframes camFlip {
+    0% { transform: scale(1) rotateY(0deg); filter: blur(0px); }
+    50% { transform: scale(0.8) rotateY(90deg); filter: blur(8px); }
+    100% { transform: scale(1) rotateY(0deg); filter: blur(0px); }
+}
+
+.cam-spin-icon {
+    animation: camSpin 0.5s linear;
+}
+
+@keyframes camSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(180deg); }
+}
+
+/* Ícone de Flash do Disparador */
+.cam-shutter-icon-flash {
+    z-index: 35;
+    animation: popFlash 0.35s ease-out;
+}
+
+@keyframes popFlash {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+/* Bolotinha de Zoom Minimizada */
+.cam-zoom-trigger {
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1.5px solid var(--cam-cyan) !important;
+    backdrop-filter: blur(8px);
+    z-index: 12;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.cam-zoom-trigger:active {
+    transform: translate(-50%, 0) scale(0.9);
+}
+
+/* Dial de Zoom Expansível */
+.cam-dial-container {
+    width: 340px;
+    height: 170px;
+    pointer-events: auto;
+    z-index: 15;
+    cursor: grab;
+    touch-action: none;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cam-dial-container.cam-dial-hidden {
+    opacity: 0;
+    pointer-events: none !important;
+    transform: translate(-50%, 40px) scale(0.8) !important;
+}
+
+.cam-dial-container:active { cursor: grabbing; }
+.cam-dial-svg { width: 100%; height: 100%; overflow: visible; }
+
+.cam-zoom-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 25;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.cam-dial-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform-origin: 200px 200px;
+    transition: transform 0.1s linear;
+}
+
+.cam-lens-item {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: color 0.25s ease, transform 0.25s ease, text-shadow 0.25s ease;
+    font-weight: 600;
+}
+
+.cam-lens-13mm { left: 55px; top: 92px; }
+.cam-lens-26mm { left: 145px; top: 52px; }
+.cam-lens-77mm { right: 55px; top: 92px; }
+
+.cam-lens-item.active {
+    color: var(--cam-cyan) !important;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.9);
+    transform: scale(1.2);
+}
+
+/* Controles Inferiores */
+.cam-shutter-ring {
+    width: 76px;
+    height: 76px;
+    background: transparent;
+    border: 3px solid var(--cam-cyan) !important;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+}
+
+.cam-shutter-core {
+    width: 58px;
+    height: 58px;
+    background: linear-gradient(135deg, #2b3052, #181a2e);
+    transition: transform 0.1s ease;
+}
+
+.cam-shutter-ring:active .cam-shutter-core {
+    transform: scale(0.88);
+    background: var(--cam-cyan);
+}
+
+.cam-flip-btn {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #32385a, #1f233b);
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+}
+
+.cam-thumb-placeholder { width: 44px; height: 44px; background: #111; }
+
+/* Overlays */
+.cam-grid { position: absolute; inset: 0; pointer-events: none; }
+.cam-grid-line { position: absolute; background: rgba(255, 255, 255, 0.2); }
+.cam-grid-line.cam-horizontal { width: 100%; height: 1px; }
+.cam-grid-line.cam-vertical { height: 100%; width: 1px; }
+
+.cam-shutter-flash {
+    position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 30;
+}
+
+@keyframes camFlashAnim {
+    0% { opacity: 0.95; }
+    100% { opacity: 0; }
+}
+
+    .cam-flash-overlay {
+        position: absolute; inset: 0; background: rgba(255, 230, 150, 0.25); pointer-events: none; opacity: 0; transition: opacity 0.2s ease; z-index: 5;
+    }
+    .cam-flash-overlay.active { opacity: 1; }
+    .cam-home-indicator { width: 134px; height: 4px; }
+
+/* ===== GALERIA ===== */
 .neon-effect {
 
 }
@@ -5,20 +248,17 @@
 
 }
 /*paleta de cores*/
-/*gradiente*/
-bg-gradient-to-r from-cyan-400 to-violet-600
-
-/*paleta*/
-Fundo principal #050509
-Fundo secundário #0D0D16
-Azul IILUME #00D9FF
-Roxo IILUME #7C3AED
-Texto primario #FFFFFF
-Texto secundário #A1A1AA
-Bordas #27272A
-
-/*fonte*/
-letra Arial
+/* Gradiente de referência: bg-gradient-to-r from-cyan-400 to-violet-600 */
+/* Paleta:
+   Fundo principal: #050509
+   Fundo secundário: #0D0D16
+   Azul IILUME: #00D9FF
+   Roxo IILUME: #7C3AED
+   Texto primário: #FFFFFF
+   Texto secundário: #A1A1AA
+   Bordas: #27272A
+*/
+/* Fonte: Arial */
 
 
 /* GALERIA*/
@@ -35,7 +275,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: transparent;
+    background: #050508;
     font-family: Arial, sans-serif;
 }
 
