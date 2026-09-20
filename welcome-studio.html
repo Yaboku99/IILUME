@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IILUME</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <link rel="stylesheet" href="css/welcome-studio.css">
+</head>
+
+<body>
+
+    <!-- Welcome -->
+    <section id="welcome-screen" class="screen">
+
+        <div class="welcome-overlay"></div>
+
+        <div class="welcome-container">
+
+            <header class="welcome-header">
+                <div class="iilume-logo">
+                    <span class="logo-symbol">✦</span>
+                    <span class="logo-name">IILUME</span>
+                </div>
+            </header>
+
+            <div class="welcome-content">
+
+                <p class="welcome-label">
+                    SEU ESTÚDIO CRIATIVO
+                </p>
+
+                <h1>
+                    Fotografe e Grave
+                    <span>como um profissional</span>
+                    com um clique.
+                </h1>
+
+                <p class="welcome-description">
+                    Capture, transforme e dê vida às suas ideias
+                    com o IILUME.
+                </p>
+
+            </div>
+
+            <div class="welcome-footer">
+
+                <button
+                    id="start-button"
+                    class="start-button"
+                    type="button"
+                >
+                    COMEÇAR
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Meu Estúdio -->
+    <section
+        id="studio-screen"
+        class="screen screen-hidden"
+    >
+
+        <div class="studio-container">
+
+            <header class="studio-header">
+
+                <div>
+                    <p class="studio-small-title">
+                        IILUME
+                    </p>
+
+                    <h1>Meu Estúdio</h1>
+                </div>
+
+                <button
+                    class="profile-button"
+                    type="button"
+                    aria-label="Perfil"
+                >
+                    <i class="bi bi-person"></i>
+                </button>
+
+            </header>
+
+
+            <section class="quick-actions">
+
+                <button
+                    id="camera-button"
+                    class="quick-action"
+                    type="button"
+                >
+                    <span class="quick-icon">
+                        <i class="bi bi-camera"></i>
+                    </span>
+
+                    <span>Câmera</span>
+                </button>
+
+
+                <button
+                    id="gallery-button"
+                    class="quick-action"
+                    type="button"
+                >
+                    <span class="quick-icon">
+                        <i class="bi bi-images"></i>
+                    </span>
+
+                    <span>Galeria</span>
+                </button>
+
+
+                <label
+                    class="quick-action"
+                    for="image-input"
+                >
+                    <span class="quick-icon">
+                        <i class="bi bi-upload"></i>
+                    </span>
+
+                    <span>Importar</span>
+                </label>
+
+                <input
+                    id="image-input"
+                    type="file"
+                    accept="image/*"
+                    hidden
+                >
+
+            </section>
+
+
+            <!-- Suas criações -->
+            <section class="studio-gallery">
+
+                <div class="gallery-header">
+
+                    <h2>Suas criações</h2>
+
+                    <button
+                        id="see-all-button"
+                        type="button"
+                    >
+                        Ver todas
+                    </button>
+
+                </div>
+
+
+                <div class="gallery-grid">
+
+                    <article class="gallery-card gallery-card-large">
+
+                        <div class="gallery-placeholder">
+
+                            <i class="bi bi-image"></i>
+
+                            <span>Sua criação</span>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="gallery-card">
+
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-image"></i>
+                        </div>
+
+                    </article>
+
+
+                    <article class="gallery-card">
+
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-image"></i>
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- Navegação -->
+            <nav class="bottom-navigation">
+
+                <button
+                    class="nav-button active"
+                    type="button"
+                >
+                    <i class="bi bi-house"></i>
+                    <span>Início</span>
+                </button>
+
+
+                <button
+                    class="nav-button"
+                    type="button"
+                >
+                    <i class="bi bi-images"></i>
+                    <span>Galeria</span>
+                </button>
+
+
+                <button
+                    id="main-camera-button"
+                    class="main-camera-button"
+                    type="button"
+                    aria-label="Abrir câmera"
+                >
+                    <i class="bi bi-camera-fill"></i>
+                </button>
+
+
+                <button
+                    class="nav-button"
+                    type="button"
+                >
+                    <i class="bi bi-stars"></i>
+                    <span>Criar</span>
+                </button>
+
+
+                <button
+                    class="nav-button"
+                    type="button"
+                >
+                    <i class="bi bi-person"></i>
+                    <span>Perfil</span>
+                </button>
+
+            </nav>
+
+        </div>
+
+    </section>
+
+
+    <script src="js/welcome-studio.js"></script>
+
+</body>
+
+</html>
