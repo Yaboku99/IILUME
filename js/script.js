@@ -9,6 +9,8 @@ const studioScreen = document.getElementById("studio-screen");
 const cameraScreen = document.getElementById("camera_screen");
 const galleryScreen = document.getElementById("gallery_screen");
 const editorScreen = document.getElementById("editor_screen");
+const aiScreen = document.getElementById("ai_screen");
+const aiEditorBackButton = document.getElementById("ai-editor-back");
 
 const startButton = document.getElementById("start-button");
 const studioCameraButton = document.getElementById("camera-button");
@@ -25,10 +27,17 @@ const editorBackButton = document.getElementById("editor-back-button");
 const editorStudioButton = document.getElementById("editor-studio-button");
 const cameraGalleryButton = document.getElementById("cam-gallery-thumb");
 
-const allScreens = [welcomeScreen, studioScreen, cameraScreen, galleryScreen, editorScreen].filter(Boolean);
+const allScreens = [welcomeScreen, studioScreen, cameraScreen, galleryScreen, editorScreen, aiScreen].filter(Boolean);
 let currentScreen = "welcome";
 let galleryReturnScreen = "studio";
 let editorReturnScreen = "gallery";
+
+
+if (aiEditorBackButton) {
+    aiEditorBackButton.addEventListener("click", () => {
+        showScreen("editor");
+    });
+}
 
 function showScreen(name) {
     const screens = {
@@ -36,7 +45,8 @@ function showScreen(name) {
         studio: studioScreen,
         camera: cameraScreen,
         gallery: galleryScreen,
-        editor: editorScreen
+        editor: editorScreen,
+        ai: aiScreen
     };
     const target = screens[name];
     if (!target) return;
@@ -233,6 +243,7 @@ const gridEl = document.getElementById("cam-grid");
 const btnFlip = document.getElementById("cam-btn-flip");
 const iconType = document.getElementById("cam-icon-type");
 const textType = document.getElementById("cam-text-type");
+const orientationTag = document.getElementById("cam-orientation-tag");
 const thumbImg = document.getElementById("cam-thumb-img");
 const zoomTrigger = document.getElementById("cam-zoom-trigger");
 const zoomTriggerText = document.getElementById("cam-zoom-trigger-text");
@@ -373,23 +384,33 @@ async function initCamera() {
     }
 }
 
-btnFlip.addEventListener("click", async () => {
-    const icon = btnFlip.querySelector("i");
-    icon.classList.add("cam-spin-icon");
-    setTimeout(() => icon.classList.remove("cam-spin-icon"), 500);
+async function alternarCameraFrontalTraseira() {
+    const icon = btnFlip?.querySelector("i");
+    icon?.classList.add("cam-spin-icon");
+    setTimeout(() => icon?.classList.remove("cam-spin-icon"), 500);
 
-    videoEl.classList.add("cam-flip-anim");
-    setTimeout(() => videoEl.classList.remove("cam-flip-anim"), 500);
+    videoEl?.classList.add("cam-flip-anim");
+    setTimeout(() => videoEl?.classList.remove("cam-flip-anim"), 500);
 
     facingMode = facingMode === "environment" ? "user" : "environment";
     if (facingMode === "user") {
         textType.textContent = "FRONTAL";
         iconType.className = "bi bi-person-bounding-box";
+        if (orientationTag) orientationTag.textContent = "FRONTAL";
     } else {
         textType.textContent = "TRASEIRA";
         iconType.className = "bi bi-camera-fill";
+        if (orientationTag) orientationTag.textContent = "TRASEIRA";
     }
     await initCamera();
+}
+
+btnFlip?.addEventListener("click", () => {
+    if (portraitMode && !portraitMode.classList.contains("portrait-show")) {
+        openPortraitMode();
+    } else {
+        closePortraitMode();
+    }
 });
 
 function addCapturedPhoto(dataUrl) {
@@ -453,6 +474,7 @@ btnFlash.addEventListener("click", () => {
     isFlashOn = !isFlashOn;
     updateFlashButton();
     flashOverlay.classList.toggle("active", isFlashOn);
+    document.getElementById("portraitFlashBtn")?.classList.toggle("portrait-active", isFlashOn);
 });
 btnGrid.addEventListener("click", () => {
     gridEl.classList.toggle("d-none");
@@ -649,24 +671,16 @@ function aplicarFiltro() {
 }
 
 function salvarVersao() {
-    if (!imagemAtual) { alert("Primeiro selecione uma imagem."); return; }
-    const versions = document.querySelectorAll(".versoes .versao");
-    let created = false;
-    versions.forEach((version, index) => {
-        const miniature = version.querySelector(".miniatura");
-        if (miniature && !miniature.querySelector("img")) {
-            const filters = ["grayscale(100%)", "sepia(70%)", "contrast(150%)"];
-            miniature.innerHTML = `<img src="${imagemAtual.src}" alt="Versão processada pela IA" style="filter:${filters[index] || "contrast(120%)"}">`;
-            created = true;
-        }
-    });
-    if (!created) {
-        const version = document.createElement("div");
-        version.className = "versao";
-        version.innerHTML = `<div class="miniatura"><img src="${imagemAtual.src}" alt="Nova versão processada pela IA" style="filter:contrast(120%)"></div><button type="button" onclick="selecionarVersao(this)">Selecionar</button>`;
-        document.querySelector(".versoes").appendChild(version);
+    if (!imagemAtual) {
+        alert("Primeiro selecione uma imagem.");
+        return;
     }
-    alert("✨ Nova versão processada pela IA foi criada!");
+
+    const aiSource = imagemAtual.currentSrc || imagemAtual.src;
+    if (window.initIILumeAI) {
+        window.initIILumeAI(aiSource);
+    }
+    showScreen("ai");
 }
 
 function selecionarVersao(button) {
@@ -824,3 +838,567 @@ updateCameraGalleryThumb();
 updateFlashButton();
 renderStudioCreations();
 showScreen("welcome");
+
+
+
+/* =========================================================
+   MODO RETRATO — integrado como submodo da Câmera
+   ========================================================= */
+const cameraVideoModeButton = document.getElementById("cam-mode-video");
+const cameraPhotoModeButton = document.getElementById("cam-mode-photo");
+const cameraPortraitModeButton = document.getElementById("cam-mode-portrait");
+const cameraPanoramaModeButton = document.getElementById("cam-mode-panorama");
+const portraitMode = document.getElementById("portrait-mode");
+const portraitPhotoBack = document.getElementById("portrait-photo-back");
+
+function setCameraModeButtonState(mode) {
+    const buttons = [
+        [cameraVideoModeButton, "video"],
+        [cameraPhotoModeButton, "photo"],
+        [cameraPortraitModeButton, "portrait"],
+        [cameraPanoramaModeButton, "panorama"]
+    ];
+    buttons.forEach(([button, buttonMode]) => {
+        if (!button) return;
+        const active = mode === buttonMode;
+        button.classList.toggle("cam-mode-active", active);
+        button.setAttribute("aria-selected", String(active));
+    });
+}
+
+function openPortraitMode() {
+    if (!portraitMode) return;
+    portraitMode.classList.add("portrait-show");
+    btnFlip?.setAttribute("aria-label", "Voltar para Foto");
+    if (btnFlip) btnFlip.title = "Voltar para Foto";
+    portraitMode.setAttribute("aria-hidden", "false");
+    setCameraModeButtonState("portrait");
+
+    const portraitFlashButton = document.getElementById("portraitFlashBtn");
+    if (portraitFlashButton) {
+        portraitFlashButton.classList.toggle("portrait-active", isFlashOn);
+    }
+}
+
+function closePortraitMode() {
+    if (!portraitMode) return;
+    portraitMode.classList.remove("portrait-show");
+    btnFlip?.setAttribute("aria-label", "Abrir Retrato");
+    if (btnFlip) btnFlip.title = "Abrir Retrato";
+    portraitMode.setAttribute("aria-hidden", "true");
+    setCameraModeButtonState("photo");
+}
+
+cameraPhotoModeButton?.addEventListener("click", closePortraitMode);
+cameraPortraitModeButton?.addEventListener("click", openPortraitMode);
+cameraVideoModeButton?.addEventListener("click", () => {
+    closePortraitMode();
+    setCameraModeButtonState("video");
+    window.setTimeout(() => setCameraModeButtonState("photo"), 250);
+});
+cameraPanoramaModeButton?.addEventListener("click", () => {
+    closePortraitMode();
+    setCameraModeButtonState("panorama");
+    window.setTimeout(() => setCameraModeButtonState("photo"), 250);
+});
+portraitPhotoBack?.addEventListener("click", () => {
+    closePortraitMode();
+    showScreen("studio");
+});
+
+/* ===== Comportamento dos controles internos do Retrato ===== */
+(() => {
+    const portraitViewport = document.getElementById("portraitViewport");
+    const portraitSubjectPhoto = document.getElementById("portraitSubjectPhoto");
+    const portraitBokehLayer = document.getElementById("portraitBokehLayer");
+    const portraitDofTag = document.getElementById("portraitDofTag");
+    const portraitLightCarousel = document.getElementById("portraitLightCarousel");
+    const portraitLightOptions = document.querySelectorAll(".portrait-light-option");
+    const portraitLightModeLabel = document.getElementById("portraitLightModeLabel");
+    const portraitBeautySlider = document.getElementById("portraitBeautySlider");
+    const portraitGridBtn = document.getElementById("portraitGridBtn");
+    const portraitGridOverlay = document.getElementById("portraitGridOverlay");
+    const portraitFocusSquare = document.getElementById("portraitFocusSquare");
+    const portraitTimerToggle = document.getElementById("portraitTimerToggle");
+    const portraitCountdownOverlay = document.getElementById("portraitCountdownOverlay");
+    const portraitCountdownNum = document.getElementById("portraitCountdownNum");
+    const portraitShutterBtn = document.getElementById("portraitShutterBtn");
+    const portraitFlashToast = document.getElementById("portraitFlashToast");
+    const portraitToastMsg = document.getElementById("portraitToastMsg");
+    const portraitSavedStrip = document.getElementById("portraitSavedStrip");
+    const portraitSavedLabel = document.getElementById("portraitSavedLabel");
+    const portraitFlashBtn = document.getElementById("portraitFlashBtn");
+    const portraitSwitchCam = document.getElementById("portraitSwitchCam");
+    const portraitPhotoTab = document.getElementById("portrait-photo-tab");
+
+    if (!portraitViewport || !portraitSubjectPhoto) return;
+
+    const portraitSubjectSrc = portraitSubjectPhoto.src;
+    const portraitLightFilters = {
+        soft: "brightness(1.2) contrast(.9) saturate(1)",
+        medium: "brightness(1) contrast(1) saturate(1.1)",
+        dramatic: "brightness(.85) contrast(1.35) saturate(1.3)"
+    };
+    const portraitLightLabels = { soft:"Suave", medium:"Média", dramatic:"Dramática" };
+    const portraitApertureBlur = {"1.4":11,"1.8":7,"2.8":4,"4":1.5};
+    let portraitCurrentLight = "medium";
+    let portraitTimerOn = false;
+
+    function portraitHaptic(ms){
+        if (navigator.vibrate) {
+            try { navigator.vibrate(ms); } catch (error) {}
+        }
+    }
+
+    function updatePortraitSubjectFilter(){
+        if (!portraitSubjectPhoto) return;
+        const t = portraitBeautySlider ? Number(portraitBeautySlider.value) / 100 : 0.3;
+        portraitSubjectPhoto.style.filter =
+            portraitLightFilters[portraitCurrentLight] +
+            ` blur(${(t * 0.5).toFixed(2)}px) brightness(${(1 + t * 0.05).toFixed(2)})`;
+    }
+
+    function selectPortraitLight(value, emitHaptic = true) {
+        const allowed = ["soft", "medium", "dramatic"];
+        if (!allowed.includes(value)) value = "medium";
+        portraitCurrentLight = value;
+        const selectedIndex = allowed.indexOf(value);
+
+        portraitLightOptions.forEach((option, index) => {
+            const isSelected = option.dataset.pos === value;
+            option.classList.toggle("portrait-light-option-active", isSelected);
+            option.setAttribute("aria-selected", String(isSelected));
+            option.style.setProperty("--light-offset", `${(index - selectedIndex) * 72}px`);
+        });
+
+        if (portraitLightModeLabel) {
+            portraitLightModeLabel.textContent = portraitLightLabels[value];
+        }
+        updatePortraitSubjectFilter();
+        if (emitHaptic) portraitHaptic(10);
+    }
+
+    portraitLightOptions.forEach((option) => {
+        option.addEventListener("click", () => selectPortraitLight(option.dataset.pos));
+    });
+
+    let portraitLightTouchStartX = null;
+    portraitLightCarousel?.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const order = ["soft", "medium", "dramatic"];
+        let index = order.indexOf(portraitCurrentLight);
+        const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+        index += delta > 0 ? 1 : -1;
+        index = Math.max(0, Math.min(order.length - 1, index));
+        selectPortraitLight(order[index]);
+    }, { passive: false });
+
+    portraitLightCarousel?.addEventListener("touchstart", (event) => {
+        portraitLightTouchStartX = event.touches[0]?.clientX ?? null;
+    }, { passive: true });
+
+    portraitLightCarousel?.addEventListener("touchend", (event) => {
+        if (portraitLightTouchStartX == null) return;
+        const endX = event.changedTouches[0]?.clientX;
+        if (typeof endX !== "number") return;
+        const delta = endX - portraitLightTouchStartX;
+        portraitLightTouchStartX = null;
+        if (Math.abs(delta) < 18) return;
+        const order = ["soft", "medium", "dramatic"];
+        let index = order.indexOf(portraitCurrentLight);
+        index += delta < 0 ? 1 : -1;
+        index = Math.max(0, Math.min(order.length - 1, index));
+        selectPortraitLight(order[index]);
+    }, { passive: true });
+
+    portraitLightCarousel?.addEventListener("keydown", (event) => {
+        const order = ["soft", "medium", "dramatic"];
+        let index = order.indexOf(portraitCurrentLight);
+        if (event.key === "ArrowRight") index += 1;
+        else if (event.key === "ArrowLeft") index -= 1;
+        else return;
+        event.preventDefault();
+        index = Math.max(0, Math.min(order.length - 1, index));
+        selectPortraitLight(order[index]);
+    });
+
+    document.querySelectorAll(".portrait-aperture-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+            // Mantém apenas uma abertura selecionada por vez.
+            document.querySelectorAll(".portrait-aperture-chip").forEach((item) => {
+                item.classList.remove("active", "portrait-active");
+                item.setAttribute("aria-selected", "false");
+            });
+            chip.classList.add("active");
+            chip.setAttribute("aria-selected", "true");
+            const f = chip.dataset.f || "1.8";
+            if (portraitBokehLayer) {
+                portraitBokehLayer.style.filter = `blur(${portraitApertureBlur[f]}px)`;
+                portraitBokehLayer.style.opacity = f === "4" ? ".35" : ".8";
+            }
+            if (portraitDofTag) {
+                portraitDofTag.textContent = `f/${f} · Bokeh`;
+            }
+            portraitHaptic(10);
+        });
+    });
+
+    portraitBeautySlider?.addEventListener("input", updatePortraitSubjectFilter);
+
+    // O botão "Foto" dentro do Retrato retorna para o modo Foto da câmera.
+    function goToPhotoModeFromPortrait(){
+        closePortraitMode();
+        cameraPhotoModeButton?.focus();
+    }
+
+    portraitPhotoTab?.addEventListener("click", goToPhotoModeFromPortrait);
+    portraitPhotoTab?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            goToPhotoModeFromPortrait();
+        }
+    });
+
+    portraitGridBtn?.addEventListener("click", () => {
+        portraitGridBtn.classList.toggle("portrait-active");
+        portraitGridOverlay.classList.toggle("portrait-show");
+        portraitHaptic(10);
+    });
+
+    portraitViewport.addEventListener("click", (event) => {
+        if (event.target.closest(".portrait-icon-btn") || event.target.closest(".portrait-dof-tag")) return;
+        const rect = portraitViewport.getBoundingClientRect();
+        if (!portraitFocusSquare) return;
+        portraitFocusSquare.style.left = `${event.clientX - rect.left}px`;
+        portraitFocusSquare.style.top = `${event.clientY - rect.top}px`;
+        portraitFocusSquare.classList.remove("portrait-show");
+        void portraitFocusSquare.offsetWidth;
+        portraitFocusSquare.classList.add("portrait-show");
+        portraitHaptic(8);
+    });
+
+    portraitTimerToggle?.addEventListener("click", () => {
+        portraitTimerOn = !portraitTimerOn;
+        portraitTimerToggle.classList.toggle("portrait-active", portraitTimerOn);
+        portraitHaptic(10);
+    });
+
+    function portraitShowToast(){
+        if (!portraitToastMsg) return;
+        portraitToastMsg.classList.add("portrait-show");
+        setTimeout(() => portraitToastMsg.classList.remove("portrait-show"), 1800);
+    }
+
+    function portraitCapture(){
+        if (portraitFlashToast) {
+            portraitFlashToast.classList.add("portrait-on");
+            setTimeout(() => portraitFlashToast.classList.remove("portrait-on"), 90);
+        }
+        portraitShowToast();
+        portraitHaptic(25);
+
+        if (portraitSavedStrip) {
+            const thumb = document.createElement("img");
+            thumb.className = "portrait-saved-thumb";
+            thumb.src = portraitSubjectSrc;
+            thumb.style.filter = portraitSubjectPhoto.style.filter || "none";
+            portraitSavedStrip.prepend(thumb);
+            while (portraitSavedStrip.children.length > 4) {
+                portraitSavedStrip.removeChild(portraitSavedStrip.lastChild);
+            }
+        }
+        portraitSavedLabel?.classList.add("portrait-show");
+
+        // Integra a captura do Retrato com a galeria já existente.
+        if (typeof addCapturedPhoto === "function") {
+            addCapturedPhoto(portraitSubjectSrc);
+        }
+    }
+
+    function runPortraitCountdownThenCapture(){
+        let n = 3;
+        portraitCountdownOverlay?.classList.add("portrait-show");
+        if (portraitCountdownNum) portraitCountdownNum.textContent = String(n);
+        portraitHaptic(15);
+
+        const tick = setInterval(() => {
+            n -= 1;
+            if (n > 0) {
+                if (portraitCountdownNum) {
+                    portraitCountdownNum.textContent = String(n);
+                    portraitCountdownNum.style.animation = "none";
+                    void portraitCountdownNum.offsetWidth;
+                    portraitCountdownNum.style.animation = "portraitCountPulse .9s ease";
+                }
+                portraitHaptic(15);
+            } else {
+                clearInterval(tick);
+                portraitCountdownOverlay?.classList.remove("portrait-show");
+                portraitCapture();
+            }
+        }, 900);
+    }
+
+    portraitShutterBtn?.addEventListener("click", () => {
+        if (portraitTimerOn) runPortraitCountdownThenCapture();
+        else portraitCapture();
+    });
+
+    // O flash do Retrato usa o mesmo estado do flash da câmera principal.
+    portraitFlashBtn?.addEventListener("click", () => {
+        isFlashOn = !isFlashOn;
+        updateFlashButton();
+        portraitFlashBtn.classList.toggle("portrait-active", isFlashOn);
+        portraitFlashBtn.setAttribute("aria-label", isFlashOn ? "Desativar flash" : "Ativar flash");
+        portraitHaptic(10);
+    });
+
+    portraitSwitchCam?.addEventListener("click", () => {
+        closePortraitMode();
+        portraitHaptic(10);
+    });
+
+    document.querySelectorAll(".portrait-mode-tabs span").forEach((tab) => {
+        tab.addEventListener("click", () => {
+            const mode = tab.dataset.portraitMode;
+            if (mode === "photo") {
+                // Volta explicitamente para o modo Foto da câmera.
+                closePortraitMode();
+                setCameraModeButtonState("photo");
+                return;
+            }
+            if (mode === "portrait") return;
+            portraitShowToast();
+            if (portraitToastMsg) {
+                portraitToastMsg.innerHTML = "<span>Modo disponível em outra etapa do projeto.</span>";
+            }
+        });
+    });
+
+    // Estado inicial da abertura: somente f/1.8 fica ativa.
+    const initialAperture = document.querySelector('.portrait-aperture-chip[data-f="1.8"]');
+    document.querySelectorAll(".portrait-aperture-chip").forEach((item) => {
+        item.classList.remove("active", "portrait-active");
+        item.setAttribute("aria-selected", "false");
+    });
+    initialAperture?.classList.add("active");
+    initialAperture?.setAttribute("aria-selected", "true");
+
+    selectPortraitLight("medium", false);
+})();
+
+
+/* =========================================================
+   MODO IA — lógica do protótipo fornecido, isolada para o IILUME
+   ========================================================= */
+(() => {
+  const testPhotoSrc = document.getElementById('ai-testPhoto').src;
+
+    // Presets de estilo — cada um interpola da imagem "crua" até seu visual completo
+    const PRESETS = {
+      natural:  {brightness:1.55, contrast:1.22, saturate:1.30, hue:0,   sepia:0,   label:'Natural'},
+      vivido:   {brightness:1.60, contrast:1.35, saturate:1.70, hue:0,   sepia:0,   label:'Vívido'},
+      noturno:  {brightness:1.75, contrast:1.15, saturate:1.15, hue:-8,  sepia:0,   label:'Noturno'},
+      retrato:  {brightness:1.45, contrast:1.20, saturate:1.20, hue:0,   sepia:.10, label:'Retrato'},
+      cinema:   {brightness:1.30, contrast:1.40, saturate:.92,  hue:-5,  sepia:0,   label:'Cinema'},
+    };
+    let currentPreset = 'natural';
+
+    const slider = document.getElementById('ai-intensitySlider');
+    const valueLabel = document.getElementById('ai-intensityValue');
+    const aiBtn = document.getElementById('ai-aiBtn');
+    const analyzingOverlay = document.getElementById('ai-analyzingOverlay');
+    const analyzingText = document.getElementById('ai-analyzingText');
+    const analyzingBarFill = document.getElementById('ai-analyzingBarFill');
+    const compareWrap = document.getElementById('ai-compareWrap');
+    const compareBefore = document.getElementById('ai-compareBefore');
+    const compareHandle = document.getElementById('ai-compareHandle');
+    const toast = document.getElementById('ai-toastMsg');
+    const cancelBtn = document.getElementById('ai-cancelBtn');
+    const confirmBtn = document.getElementById('ai-confirmBtn');
+    const afterPhoto = document.getElementById('ai-sceneAfter');
+    const depoisSub = document.getElementById('ai-depoisSub');
+    const gridBtn = document.getElementById('ai-gridBtn');
+    const gridOverlay = document.getElementById('ai-gridOverlay');
+    const savedStrip = document.getElementById('ai-savedStrip');
+    const savedLabel = document.getElementById('ai-savedLabel');
+    const camReadout = document.getElementById('ai-camReadout');
+
+    function haptic(ms){ if (navigator.vibrate) { try { navigator.vibrate(ms); } catch(e){} } }
+
+    function buildFilter(presetKey, t){
+      const p = PRESETS[presetKey];
+      const b = 1 + (p.brightness - 1) * t;
+      const c = 1 + (p.contrast - 1) * t;
+      const s = 1 + (p.saturate - 1) * t;
+      const h = p.hue * t;
+      const sep = p.sepia * t;
+      return `brightness(${b.toFixed(2)}) contrast(${c.toFixed(2)}) saturate(${s.toFixed(2)}) hue-rotate(${h.toFixed(1)}deg) sepia(${sep.toFixed(2)})`;
+    }
+
+    function applyIntensity(){
+      const t = slider.value / 100;
+      afterPhoto.style.filter = buildFilter(currentPreset, t);
+      // "melhora" as leituras de ISO/velocidade proporcionalmente à intensidade
+      const iso = Math.round(1600 - (1600 - 100) * t);
+      const shutter = Math.round(15 + (250 - 15) * t);
+      depoisSub.textContent = `ISO ${iso} · 1/${shutter}s`;
+    }
+
+    slider.addEventListener('input', () => {
+      valueLabel.textContent = slider.value;
+      applyIntensity();
+    });
+
+    const presetRow = document.getElementById('ai-presetRow');
+    document.querySelectorAll('.ai-preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.ai-preset-chip').forEach(c => c.classList.remove('ai-active'));
+        chip.classList.add('ai-active');
+        currentPreset = chip.dataset.preset;
+        applyIntensity();
+        chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        haptic(10);
+      });
+    });
+
+    if (presetRow) {
+      presetRow.addEventListener('wheel', (event) => {
+        if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+          event.preventDefault();
+          presetRow.scrollLeft += event.deltaY;
+        }
+      }, { passive: false });
+    }
+
+    gridBtn.addEventListener('click', () => {
+      gridBtn.classList.toggle('ai-active');
+      gridOverlay.classList.toggle('ai-show');
+      haptic(10);
+    });
+
+    // Simula a análise de IA em etapas, com barra de progresso
+    const PHASES = [
+      'Detectando cenário...',
+      'Corrigindo exposição...',
+      'Reduzindo ruído...',
+      'Aumentando nitidez...',
+      'Aplicando estilo ' + PRESETS[currentPreset].label + '...',
+      'Finalizando...'
+    ];
+
+    aiBtn.addEventListener('click', () => {
+      if (aiBtn.classList.contains('ai-busy')) return;
+      haptic(15);
+      aiBtn.classList.add('busy', 'pulse');
+      setTimeout(() => aiBtn.classList.remove('ai-pulse'), 500);
+      compareWrap.classList.remove('ai-show');
+      analyzingOverlay.classList.add('ai-show');
+
+      const phases = [
+        'Detectando cenário...',
+        'Corrigindo exposição...',
+        'Reduzindo ruído...',
+        'Aumentando nitidez...',
+        `Aplicando estilo ${PRESETS[currentPreset].label}...`,
+        'Finalizando...'
+      ];
+      let step = 0;
+      analyzingText.textContent = phases[0];
+      analyzingBarFill.style.width = '0%';
+
+      const stepMs = 380;
+      const interval = setInterval(() => {
+        step++;
+        analyzingBarFill.style.width = Math.min(100, (step / phases.length) * 100) + '%';
+        if (step < phases.length) {
+          analyzingText.style.opacity = 0;
+          setTimeout(() => { analyzingText.textContent = phases[step]; analyzingText.style.opacity = 1; }, 120);
+        } else {
+          clearInterval(interval);
+        }
+      }, stepMs);
+
+      setTimeout(() => {
+        analyzingOverlay.classList.remove('ai-show');
+        compareWrap.classList.add('ai-show');
+        aiBtn.classList.remove('ai-busy');
+        applyIntensity();
+        showToast(`Estilo ${PRESETS[currentPreset].label} aplicado`, '✨');
+        haptic(20);
+      }, phases.length * stepMs + 250);
+    });
+
+    function showToast(msg, icon){
+      toast.innerHTML = (icon ? `<span>${icon}</span>` : '') + `<span>${msg}</span>`;
+      toast.classList.add('ai-show');
+      setTimeout(() => toast.classList.remove('ai-show'), 2400);
+    }
+
+    cancelBtn.addEventListener('click', () => {
+      compareWrap.classList.remove('ai-show');
+      haptic(10);
+    });
+
+    let savedCount = 0;
+    confirmBtn.addEventListener('click', () => {
+      if (!compareWrap.classList.contains('ai-show')) {
+        showToast('Aplique a IA antes de salvar', '⚠️');
+        return;
+      }
+      savedCount++;
+      const thumb = document.createElement('img');
+      thumb.className = 'saved-thumb';
+      thumb.src = testPhotoSrc;
+      thumb.style.filter = afterPhoto.style.filter;
+      savedStrip.prepend(thumb);
+      while (savedStrip.children.length > 4) savedStrip.removeChild(savedStrip.lastChild);
+      savedLabel.classList.add('ai-show');
+      showToast('Foto salva em "Salvos pela IA"', '✅');
+      haptic(25);
+    });
+
+    // Arrasto do comparador antes/depois
+    let dragging = false;
+    const viewport = document.getElementById('ai-viewport');
+
+    function moveHandle(clientX){
+      const rect = viewport.getBoundingClientRect();
+      let pct = ((clientX - rect.left) / rect.width) * 100;
+      pct = Math.max(0, Math.min(100, pct));
+      compareHandle.style.left = pct + '%';
+      compareBefore.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    }
+
+    compareHandle.addEventListener('mousedown', () => dragging = true);
+    compareHandle.addEventListener('touchstart', () => dragging = true, {passive:true});
+    window.addEventListener('mouseup', () => dragging = false);
+    window.addEventListener('touchend', () => dragging = false);
+    window.addEventListener('mousemove', e => { if(dragging) moveHandle(e.clientX); });
+    window.addEventListener('touchmove', e => { if(dragging) moveHandle(e.touches[0].clientX); }, {passive:true});
+
+    applyIntensity();
+
+  const aiImageDefault = document.getElementById('ai-testPhoto') ? document.getElementById('ai-testPhoto').src : '';
+  window.initIILumeAI = function(src){
+    const img = document.getElementById('ai-testPhoto');
+    const before = document.getElementById('ai-compareBefore');
+    const after = document.getElementById('ai-sceneAfter');
+    if (img && src) img.src = src;
+    if (before && src) before.src = src;
+    if (after && src) after.src = src;
+    const wrap = document.getElementById('ai-compareWrap');
+    const overlay = document.getElementById('ai-analyzingOverlay');
+    if (wrap) wrap.classList.remove('ai-show');
+    if (overlay) overlay.classList.remove('ai-show');
+  };
+
+  const aiCancel = document.getElementById('ai-cancelBtn');
+  if (aiCancel) {
+    aiCancel.addEventListener('click', () => {
+      const wrap = document.getElementById('ai-compareWrap');
+      if (wrap) wrap.classList.remove('ai-show');
+      if (typeof showScreen === 'function') showScreen('editor');
+    });
+  }
+})();
