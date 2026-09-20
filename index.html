@@ -13,10 +13,250 @@
 
 <div id="app-shell" class="app-shell">
 
+<!-- Welcome -->
+    <section id="welcome-screen" class="screen iilume-screen welcome-screen active">
+
+        <div class="welcome-overlay"></div>
+
+        <div class="welcome-container">
+
+            <header class="welcome-header">
+                <div class="iilume-logo">
+                    <span class="logo-symbol">✦</span>
+                    <span class="logo-name">IILUME</span>
+                </div>
+            </header>
+
+            <div class="welcome-content">
+
+                <p class="welcome-label">
+                    SEU ESTÚDIO CRIATIVO
+                </p>
+
+                <h1>
+                    Fotografe e Grave
+                    <span>como um profissional</span>
+                    com um clique.
+                </h1>
+
+                <p class="welcome-description">
+                    Capture, transforme e dê vida às suas ideias
+                    com o IILUME.
+                </p>
+
+            </div>
+
+            <div class="welcome-footer">
+
+                <button
+                    id="start-button"
+                    class="start-button"
+                    type="button"
+                >
+                    COMEÇAR
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Meu Estúdio -->
+    <section
+        id="studio-screen"
+        class="screen iilume-screen studio-screen"
+    >
+
+        <div class="studio-container">
+
+            <header class="studio-header">
+
+                <div>
+                    <p class="studio-small-title">
+                        IILUME
+                    </p>
+
+                    <h1>Meu Estúdio</h1>
+                </div>
+
+                <button
+                    class="profile-button"
+                    type="button"
+                    aria-label="Perfil"
+                >
+                    <i class="bi bi-person"></i>
+                </button>
+
+            </header>
+
+
+            <section class="quick-actions">
+
+                <button
+                    id="camera-button"
+                    class="quick-action"
+                    type="button"
+                >
+                    <span class="quick-icon">
+                        <i class="bi bi-camera"></i>
+                    </span>
+
+                    <span>Câmera</span>
+                </button>
+
+
+                <button
+                    id="gallery-button"
+                    class="quick-action"
+                    type="button"
+                >
+                    <span class="quick-icon">
+                        <i class="bi bi-images"></i>
+                    </span>
+
+                    <span>Galeria</span>
+                </button>
+
+
+                <label
+                    class="quick-action"
+                    for="image-input"
+                >
+                    <span class="quick-icon">
+                        <i class="bi bi-upload"></i>
+                    </span>
+
+                    <span>Importar</span>
+                </label>
+
+                <input
+                    id="image-input"
+                    type="file"
+                    accept="image/*"
+                    hidden
+                >
+
+            </section>
+
+
+            <!-- Suas criações -->
+            <section class="studio-gallery">
+
+                <div class="gallery-header">
+
+                    <h2>Suas criações</h2>
+
+                    <button
+                        id="see-all-button"
+                        type="button"
+                    >
+                        Ver todas
+                    </button>
+
+                </div>
+
+
+                <div class="gallery-grid">
+
+                    <article class="gallery-card gallery-card-large">
+
+                        <div class="gallery-placeholder" id="studio-preview-1">
+
+                            <i class="bi bi-image"></i>
+
+                            <span>Sua criação</span>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="gallery-card">
+
+                        <div class="gallery-placeholder" id="studio-preview-2">
+                            <i class="bi bi-image"></i>
+                        </div>
+
+                    </article>
+
+
+                    <article class="gallery-card">
+
+                        <div class="gallery-placeholder" id="studio-preview-3">
+                            <i class="bi bi-image"></i>
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- Navegação -->
+            <nav class="bottom-navigation">
+
+                <button
+                    class="nav-button active"
+                    type="button"
+                >
+                    <i class="bi bi-house"></i>
+                    <span>Início</span>
+                </button>
+
+
+                <button
+                    id="studio-gallery-nav"
+                    class="nav-button"
+                    type="button"
+                >
+                    <i class="bi bi-images"></i>
+                    <span>Galeria</span>
+                </button>
+
+
+                <button
+                    id="main-camera-button"
+                    class="main-camera-button"
+                    type="button"
+                    aria-label="Abrir câmera"
+                >
+                    <i class="bi bi-camera-fill"></i>
+                </button>
+
+
+                <button
+                    id="studio-create-nav"
+                    class="nav-button"
+                    type="button"
+                >
+                    <i class="bi bi-stars"></i>
+                    <span>Editar</span>
+                </button>
+
+
+                <button
+                    class="nav-button"
+                    type="button"
+                >
+                    <i class="bi bi-person"></i>
+                    <span>Perfil</span>
+                </button>
+
+            </nav>
+
+        </div>
+
+    </section>
+
+
     <!-- =========================================================
-         TELA 1 — CÂMERA (VS)
+         TELA 3 — CÂMERA
          ========================================================= -->
-    <main id="camera_screen" class="iilume-screen camera-screen active">
+    <main id="camera_screen" class="iilume-screen camera-screen">
         <div class="cam-status-bar">
             <span class="fw-bold fs-6">9:41</span>
             <div class="cam-dynamic-island rounded-pill bg-black"></div>
@@ -28,8 +268,8 @@
         </div>
 
         <header class="cam-top-bar">
-            <button id="cam-btn-flash" class="cam-icon-circle" type="button" title="Flash" aria-label="Ativar flash">
-                <i class="bi bi-zap" id="cam-icon-flash"></i>
+            <button id="cam-btn-studio" class="cam-icon-circle" type="button" title="Voltar para Meu Estúdio" aria-label="Voltar para Meu Estúdio">
+                <i class="bi bi-arrow-left"></i>
             </button>
 
             <div class="cam-indicator-badge">
@@ -59,6 +299,10 @@
 
             <div id="cam-shutter-flash" class="cam-shutter-flash"></div>
             <div id="cam-flash-overlay" class="cam-flash-overlay"></div>
+
+            <button id="cam-btn-flash" class="cam-floating-flash" type="button" title="Flash" aria-label="Ativar flash">
+                <span id="cam-icon-flash" class="cam-flash-symbol" aria-hidden="true">⚡</span>
+            </button>
 
             <button id="cam-zoom-trigger" class="cam-zoom-trigger" type="button" aria-label="Abrir zoom">
                 <span id="cam-zoom-trigger-text">1x</span>
@@ -112,7 +356,7 @@
     </main>
 
     <!-- =========================================================
-         TELA 2 — GALERIA (LL)
+         TELA 4 — GALERIA (LL)
          ========================================================= -->
     <section id="gallery_screen" class="iilume-screen gallery-screen">
         <header class="phone-header">
@@ -179,7 +423,7 @@
     </section>
 
     <!-- =========================================================
-         TELA 3 — EDITOR (CH)
+         TELA 5 — EDITOR (CH)
          ========================================================= -->
     <main id="editor_screen" class="iilume-screen editor-screen">
         <header class="editor-header">
@@ -188,7 +432,9 @@
                 <span>Galeria</span>
             </button>
             <div class="editor-header-brand">IILUME</div>
-            <div class="editor-header-spacer"></div>
+            <button id="editor-studio-button" class="editor-studio-button" type="button" aria-label="Voltar para Meu Estúdio" title="Meu Estúdio">
+                <i class="bi bi-house"></i>
+            </button>
         </header>
 
         <div class="editor-content">

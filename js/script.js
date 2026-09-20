@@ -4,31 +4,58 @@
    NAVEGAÇÃO ENTRE TELAS
    Câmera -> Galeria -> Editor -> Galeria
    ========================================================= */
+const welcomeScreen = document.getElementById("welcome-screen");
+const studioScreen = document.getElementById("studio-screen");
 const cameraScreen = document.getElementById("camera_screen");
 const galleryScreen = document.getElementById("gallery_screen");
 const editorScreen = document.getElementById("editor_screen");
 
+const startButton = document.getElementById("start-button");
+const studioCameraButton = document.getElementById("camera-button");
+const studioMainCameraButton = document.getElementById("main-camera-button");
+const studioGalleryButton = document.getElementById("gallery-button");
+const studioGalleryNav = document.getElementById("studio-gallery-nav");
+const studioSeeAllButton = document.getElementById("see-all-button");
+const studioCreateNav = document.getElementById("studio-create-nav");
+const imageInput = document.getElementById("image-input");
+
 const editButton = document.getElementById("edit_button");
 const galleryBackButton = document.getElementById("gallery-back-button");
 const editorBackButton = document.getElementById("editor-back-button");
+const editorStudioButton = document.getElementById("editor-studio-button");
 const cameraGalleryButton = document.getElementById("cam-gallery-thumb");
 
-let currentScreen = "camera";
+const allScreens = [welcomeScreen, studioScreen, cameraScreen, galleryScreen, editorScreen].filter(Boolean);
+let currentScreen = "welcome";
+let galleryReturnScreen = "studio";
+let editorReturnScreen = "gallery";
 
 function showScreen(name) {
-    const screens = { camera: cameraScreen, gallery: galleryScreen, editor: editorScreen };
+    const screens = {
+        welcome: welcomeScreen,
+        studio: studioScreen,
+        camera: cameraScreen,
+        gallery: galleryScreen,
+        editor: editorScreen
+    };
     const target = screens[name];
     if (!target) return;
 
-    [cameraScreen, galleryScreen, editorScreen].forEach((screen) => {
-        screen.classList.remove("active");
-    });
-
+    allScreens.forEach((screen) => screen.classList.remove("active"));
     target.classList.add("active");
     currentScreen = name;
 
+    if (name === "camera") {
+        // A câmera só pede permissão quando realmente é aberta.
+        initCamera();
+    }
+
     if (name === "editor") {
         closeEditorModals();
+    }
+
+    if (name === "studio") {
+        renderStudioCreations();
     }
 }
 
@@ -150,6 +177,24 @@ async function sharePhoto() {
     alert("Compartilhamento simulado!\n\n" + photo.name);
 }
 
+function updateCameraGalleryThumb() {
+    if (!thumbImg) return;
+
+    if (!galleryPhotos.length) {
+        thumbImg.removeAttribute("src");
+        thumbImg.classList.add("d-none");
+        return;
+    }
+
+    const lastIndex = galleryPhotos.length - 1;
+    const lastPhoto = galleryPhotos[lastIndex];
+
+    thumbImg.src = lastPhoto.src;
+    thumbImg.alt = `Última foto: ${lastPhoto.name}`;
+    thumbImg.classList.remove("d-none");
+    thumbImg.onerror = () => useImageFallback(thumbImg, lastIndex);
+}
+
 function deletePhoto() {
     if (!galleryPhotos.length) return;
 
@@ -159,13 +204,17 @@ function deletePhoto() {
     galleryPhotos.splice(currentPhotoIndex, 1);
     if (currentPhotoIndex >= galleryPhotos.length) currentPhotoIndex = galleryPhotos.length - 1;
     selectPhoto(Math.max(0, currentPhotoIndex));
+    updateCameraGalleryThumb();
 }
 
 favoriteButton.addEventListener("click", toggleFavorite);
 infoButton.addEventListener("click", toggleInfo);
 shareButton.addEventListener("click", sharePhoto);
 deleteButton.addEventListener("click", deletePhoto);
-galleryBackButton.addEventListener("click", () => showScreen("camera"));
+galleryBackButton.addEventListener("click", () => {
+    closeGalleryInfo();
+    showScreen(galleryReturnScreen);
+});
 
 /* =========================================================
    CÂMERA
@@ -174,6 +223,7 @@ const videoEl = document.getElementById("cam-stream");
 const fallbackEl = document.getElementById("cam-fallback");
 const btnShutter = document.getElementById("cam-btn-shutter");
 const btnFlash = document.getElementById("cam-btn-flash");
+const btnStudio = document.getElementById("cam-btn-studio");
 const iconFlash = document.getElementById("cam-icon-flash");
 const flashOverlay = document.getElementById("cam-flash-overlay");
 const shutterFlash = document.getElementById("cam-shutter-flash");
@@ -352,8 +402,8 @@ function addCapturedPhoto(dataUrl) {
     };
     galleryPhotos.push(photo);
     selectPhoto(galleryPhotos.length - 1);
-    thumbImg.src = dataUrl;
-    thumbImg.classList.remove("d-none");
+    updateCameraGalleryThumb();
+    renderStudioCreations();
 }
 
 btnShutter.addEventListener("click", () => {
@@ -391,9 +441,17 @@ btnShutter.addEventListener("click", () => {
     addCapturedPhoto(canvas.toDataURL("image/png"));
 });
 
+function updateFlashButton() {
+    if (!iconFlash || !btnFlash) return;
+    iconFlash.className = "cam-flash-symbol";
+    btnFlash.classList.toggle("flash-active", isFlashOn);
+    btnFlash.setAttribute("aria-label", isFlashOn ? "Desativar flash" : "Ativar flash");
+    btnFlash.title = isFlashOn ? "Flash ativado" : "Flash desativado";
+}
+
 btnFlash.addEventListener("click", () => {
     isFlashOn = !isFlashOn;
-    iconFlash.className = isFlashOn ? "bi bi-zap-fill text-warning" : "bi bi-zap";
+    updateFlashButton();
     flashOverlay.classList.toggle("active", isFlashOn);
 });
 btnGrid.addEventListener("click", () => {
@@ -401,8 +459,19 @@ btnGrid.addEventListener("click", () => {
     btnGrid.classList.toggle("text-info");
 });
 
+if (btnStudio) {
+    btnStudio.addEventListener("click", () => {
+        showScreen("studio");
+    });
+}
+
 cameraGalleryButton.addEventListener("click", () => {
     closeGalleryInfo();
+    if (galleryPhotos.length) {
+        currentPhotoIndex = galleryPhotos.length - 1;
+        selectPhoto(currentPhotoIndex);
+    }
+    galleryReturnScreen = "camera";
     showScreen("gallery");
 });
 
@@ -631,6 +700,7 @@ function openEditorFromGallery() {
     }
     const photo = galleryPhotos[currentPhotoIndex];
     selectedEditorVersion = null;
+    editorReturnScreen = "gallery";
     mostrarImagem(photo.src);
     showScreen("editor");
 }
@@ -638,12 +708,110 @@ function openEditorFromGallery() {
 editButton.addEventListener("click", openEditorFromGallery);
 editorBackButton.addEventListener("click", () => {
     closeEditorModals();
-    showScreen("gallery");
-    selectPhoto(currentPhotoIndex);
+    showScreen(editorReturnScreen);
+    if (editorReturnScreen === "gallery") selectPhoto(currentPhotoIndex);
 });
+
+if (editorStudioButton) {
+    editorStudioButton.addEventListener("click", () => {
+        closeEditorModals();
+        showScreen("studio");
+    });
+}
 
 function closeGalleryInfo() {
     photoInfo.classList.add("hidden");
+}
+
+
+/* =========================================================
+   WELCOME + MEU ESTÚDIO
+   ========================================================= */
+function renderStudioCreations() {
+    const previews = [
+        document.getElementById("studio-preview-1"),
+        document.getElementById("studio-preview-2"),
+        document.getElementById("studio-preview-3")
+    ].filter(Boolean);
+
+    previews.forEach((preview, index) => {
+        const photo = galleryPhotos[index];
+        if (!photo) {
+            preview.innerHTML = index === 0
+                ? '<i class="bi bi-image"></i><span>Sua criação</span>'
+                : '<i class="bi bi-image"></i>';
+            return;
+        }
+
+        preview.innerHTML = `<img src="${photo.src}" alt="${photo.name}" class="imported-image">`;
+    });
+}
+
+if (startButton) {
+    startButton.addEventListener("click", () => showScreen("studio"));
+}
+
+function openCameraFromStudio() {
+    showScreen("camera");
+}
+
+function openGalleryFromStudio() {
+    galleryReturnScreen = "studio";
+    closeGalleryInfo();
+    selectPhoto(currentPhotoIndex);
+    showScreen("gallery");
+}
+
+function openEditorFromStudio() {
+    if (galleryPhotos.length) {
+        const photo = galleryPhotos[currentPhotoIndex];
+        editorReturnScreen = "studio";
+        selectedEditorVersion = null;
+        mostrarImagem(photo.src);
+    } else {
+        editorReturnScreen = "studio";
+    }
+    showScreen("editor");
+}
+
+[studioCameraButton, studioMainCameraButton].filter(Boolean).forEach((button) => {
+    button.addEventListener("click", openCameraFromStudio);
+});
+
+[studioGalleryButton, studioGalleryNav, studioSeeAllButton].filter(Boolean).forEach((button) => {
+    button.addEventListener("click", openGalleryFromStudio);
+});
+
+if (studioCreateNav) {
+    studioCreateNav.addEventListener("click", openEditorFromStudio);
+}
+
+if (imageInput) {
+    imageInput.addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            alert("Selecione um arquivo de imagem.");
+            imageInput.value = "";
+            return;
+        }
+
+        const url = URL.createObjectURL(file);
+        galleryPhotos.push({
+            name: file.name,
+            src: url,
+            favorite: false,
+            imported: true
+        });
+        currentPhotoIndex = galleryPhotos.length - 1;
+        renderThumbnails();
+        selectPhoto(currentPhotoIndex);
+        renderStudioCreations();
+
+        // A imagem importada fica disponível imediatamente na galeria.
+        openGalleryFromStudio();
+        imageInput.value = "";
+    });
 }
 
 /* =========================================================
@@ -652,5 +820,7 @@ function closeGalleryInfo() {
 renderTicks();
 updateZoom(0);
 selectPhoto(0);
-initCamera();
-showScreen("camera");
+updateCameraGalleryThumb();
+updateFlashButton();
+renderStudioCreations();
+showScreen("welcome");
