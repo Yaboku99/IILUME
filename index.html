@@ -2,295 +2,274 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>IILUME</title>
 
-    <!-- Bootstrap 5 CSS - usado pela parte da câmera -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons - usado pela parte da câmera  -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-black text-white cam-unselectable d-flex align-items-center justify-content-center min-vh-100">
+<body>
 
+<div id="app-shell" class="app-shell">
 
-<!-- Container Principal do Celular -->
-<main id="camera_screen" class="cam-container iilume-screen camera-screen active position-relative overflow-hidden d-flex flex-column justify-content-between">
-
-    <!-- Status Bar Mobile -->
-    <div class="cam-status-bar d-flex justify-content-between align-items-center px-4 pt-2">
-        <span class="fw-bold fs-6">9:41</span>
-        <div class="cam-dynamic-island rounded-pill bg-black"></div>
-        <div class="d-flex align-items-center gap-2 fs-6">
-            <i class="bi bi-reception-4"></i>
-            <i class="bi bi-wifi"></i>
-            <i class="bi bi-battery-full"></i>
-        </div>
-    </div>
-
-    <!-- Top Bar: Controles Rápidos e Indicador de Câmera -->
-    <header class="cam-top-bar d-flex justify-content-between align-items-center px-4 py-2">
-        <button id="cam-btn-flash" class="btn text-white p-0 rounded-circle border-0 cam-icon-circle" title="Flash">
-            <i class="bi bi-zap" id="cam-icon-flash"></i>
-        </button>
-
-        <!-- Indicador Visual (Frontal / Traseira) -->
-        <div class="cam-indicator-badge d-flex align-items-center gap-1 rounded-pill px-2 py-1">
-            <i class="bi bi-camera-fill text-info fs-6" id="cam-icon-type"></i>
-            <span id="cam-text-type" class="fw-bold tracking-wide">TRASEIRA</span>
-        </div>
-
-        <button id="cam-btn-grid" class="btn text-white p-0 rounded-circle border-0 cam-icon-circle" title="Grade">
-            <i class="bi bi-bullseye fs-5"></i>
-        </button>
-    </header>
-
-    <!-- Área Principal da Câmera (Viewfinder) -->
-    <section class="cam-viewfinder position-relative flex-grow-1 overflow-hidden">
-        <!-- Media Stream -->
-        <video id="cam-stream" autoplay playsinline muted class="cam-media cam-zoom-26mm"></video>
-
-        <!-- Ícone de Flash do Disparador -->
-        <div id="cam-shutter-icon-flash" class="cam-shutter-icon-flash d-none position-absolute top-50 start-50 translate-middle text-center">
-            <i class="bi bi-zap-fill text-warning display-1"></i>
-        </div>
-
-        <!-- Grade de Terços -->
-        <div id="cam-grid" class="cam-grid d-none">
-            <div class="cam-grid-line cam-horizontal" style="top: 33.33%;"></div>
-            <div class="cam-grid-line cam-horizontal" style="top: 66.66%;"></div>
-            <div class="cam-grid-line cam-vertical" style="left: 33.33%;"></div>
-            <div class="cam-grid-line cam-vertical" style="left: 66.66%;"></div>
-        </div>
-
-        <!-- Overlays de Flash -->
-        <div id="cam-shutter-flash" class="cam-shutter-flash"></div>
-        <div id="cam-flash-overlay" class="cam-flash-overlay"></div>
-
-        <!-- Bolotinha de Zoom Minimizada -->
-        <button id="cam-zoom-trigger" class="cam-zoom-trigger position-absolute bottom-0 start-50 translate-middle-x mb-3 rounded-circle border-0 text-info fw-bold shadow">
-            <span id="cam-zoom-trigger-text">1x</span>
-        </button>
-
-        <!-- Dial de Zoom Expansível -->
-        <div class="cam-dial-container cam-dial-hidden position-absolute bottom-0 start-50 translate-middle-x" id="cam-dial">
-            <button id="cam-zoom-close" class="cam-zoom-close rounded-circle border-0 text-white">&times;</button>
-            <svg class="cam-dial-svg" viewBox="0 0 400 200">
-                <defs>
-                    <radialGradient id="camBlueGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stop-color="#00aaff" stop-opacity="0.8" />
-                        <stop offset="40%" stop-color="#0033aa" stop-opacity="0.5" />
-                        <stop offset="100%" stop-color="#050a1a" stop-opacity="0.9" />
-                    </radialGradient>
-                </defs>
-                <path d="M 20,200 A 180,180 0 0,1 380,200 Z" fill="url(#camBlueGlow)" />
-                <line x1="200" y1="15" x2="200" y2="35" stroke="#00f0ff" stroke-width="3.5" stroke-linecap="round" />
-                <g id="cam-dial-ticks" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"></g>
-            </svg>
-
-            <!-- Lentes Interativas no Dial -->
-            <div class="cam-dial-content" id="cam-dial-content">
-                <div class="cam-lens-item cam-lens-13mm" data-lens="13mm" data-angle="-30">
-                    <span class="d-block fs-6">0,5</span>
-                    <span class="d-block small">13 MM</span>
-                </div>
-
-                <div class="cam-lens-item cam-lens-26mm active" data-lens="26mm" data-angle="0">
-                    <span class="d-block fs-6">1</span>
-                    <span class="d-block small">26 MM</span>
-                </div>
-
-                <div class="cam-lens-item cam-lens-77mm" data-lens="77mm" data-angle="30">
-                    <span class="d-block fs-6">3</span>
-                    <span class="d-block small">77 MM</span>
-                </div>
+    <!-- =========================================================
+         TELA 1 — CÂMERA (VS)
+         ========================================================= -->
+    <main id="camera_screen" class="iilume-screen camera-screen active">
+        <div class="cam-status-bar">
+            <span class="fw-bold fs-6">9:41</span>
+            <div class="cam-dynamic-island rounded-pill bg-black"></div>
+            <div class="cam-status-icons">
+                <i class="bi bi-reception-4"></i>
+                <i class="bi bi-wifi"></i>
+                <i class="bi bi-battery-full"></i>
             </div>
         </div>
-    </section>
 
-    <!-- Controles Inferiores -->
-    <footer class="cam-bottom-bar bg-black pt-2 pb-4 d-flex flex-column align-items-center">
-        <div class="d-flex align-items-center justify-content-between w-100 px-5 my-2">
-            <!-- Espaço reservado para a Galeria -->
-            <div class="cam-thumb-placeholder border border-secondary rounded-circle overflow-hidden" role="button" tabindex="0" title="Abrir galeria">
-                <img id="cam-thumb-img" class="w-100 h-100 object-fit-cover d-none" alt="Thumb">
+        <header class="cam-top-bar">
+            <button id="cam-btn-flash" class="cam-icon-circle" type="button" title="Flash" aria-label="Ativar flash">
+                <i class="bi bi-zap" id="cam-icon-flash"></i>
+            </button>
+
+            <div class="cam-indicator-badge">
+                <i class="bi bi-camera-fill" id="cam-icon-type"></i>
+                <span id="cam-text-type">TRASEIRA</span>
             </div>
 
-            <!-- Botão Disparador -->
-            <button id="cam-btn-shutter" class="cam-shutter-ring rounded-circle d-flex align-items-center justify-content-center border-0 p-0">
-                <div class="cam-shutter-core rounded-circle"></div>
+            <button id="cam-btn-grid" class="cam-icon-circle" type="button" title="Grade" aria-label="Exibir grade">
+                <i class="bi bi-bullseye"></i>
+            </button>
+        </header>
+
+        <section class="cam-viewfinder">
+            <video id="cam-stream" autoplay playsinline muted class="cam-media cam-zoom-26mm"></video>
+            <div id="cam-fallback" class="cam-fallback" aria-hidden="true"></div>
+
+            <div id="cam-shutter-icon-flash" class="cam-shutter-icon-flash d-none">
+                <i class="bi bi-zap-fill text-warning display-1"></i>
+            </div>
+
+            <div id="cam-grid" class="cam-grid d-none">
+                <div class="cam-grid-line cam-horizontal" style="top:33.33%"></div>
+                <div class="cam-grid-line cam-horizontal" style="top:66.66%"></div>
+                <div class="cam-grid-line cam-vertical" style="left:33.33%"></div>
+                <div class="cam-grid-line cam-vertical" style="left:66.66%"></div>
+            </div>
+
+            <div id="cam-shutter-flash" class="cam-shutter-flash"></div>
+            <div id="cam-flash-overlay" class="cam-flash-overlay"></div>
+
+            <button id="cam-zoom-trigger" class="cam-zoom-trigger" type="button" aria-label="Abrir zoom">
+                <span id="cam-zoom-trigger-text">1x</span>
             </button>
 
-            <!-- Botão Inverter Câmera -->
-            <button id="cam-btn-flip" class="cam-flip-btn rounded-circle d-flex align-items-center justify-content-center border-0 text-white">
-                <i class="bi bi-arrow-repeat fs-5"></i>
+            <div id="cam-dial" class="cam-dial-container cam-dial-hidden">
+                <button id="cam-zoom-close" class="cam-zoom-close" type="button" aria-label="Fechar zoom">&times;</button>
+                <svg class="cam-dial-svg" viewBox="0 0 400 200" aria-hidden="true">
+                    <defs>
+                        <radialGradient id="camBlueGlow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#00aaff" stop-opacity="0.8" />
+                            <stop offset="40%" stop-color="#0033aa" stop-opacity="0.5" />
+                            <stop offset="100%" stop-color="#050a1a" stop-opacity="0.9" />
+                        </radialGradient>
+                    </defs>
+                    <path d="M20,200 A180,180 0 0,1 380,200 Z" fill="url(#camBlueGlow)" />
+                    <line x1="200" y1="15" x2="200" y2="35" stroke="#00f0ff" stroke-width="3.5" stroke-linecap="round" />
+                    <g id="cam-dial-ticks" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"></g>
+                </svg>
+
+                <div id="cam-dial-content" class="cam-dial-content">
+                    <button class="cam-lens-item cam-lens-13mm" type="button" data-lens="13mm" data-angle="-30">
+                        <span>0,5</span><small>13 MM</small>
+                    </button>
+                    <button class="cam-lens-item cam-lens-26mm active" type="button" data-lens="26mm" data-angle="0">
+                        <span>1</span><small>26 MM</small>
+                    </button>
+                    <button class="cam-lens-item cam-lens-77mm" type="button" data-lens="77mm" data-angle="30">
+                        <span>3</span><small>77 MM</small>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <footer class="cam-bottom-bar">
+            <div class="cam-bottom-controls">
+                <button id="cam-gallery-thumb" class="cam-thumb-placeholder" type="button" title="Abrir galeria" aria-label="Abrir galeria">
+                    <img id="cam-thumb-img" alt="Última foto" class="d-none">
+                </button>
+
+                <button id="cam-btn-shutter" class="cam-shutter-ring" type="button" aria-label="Tirar foto">
+                    <span class="cam-shutter-core"></span>
+                </button>
+
+                <button id="cam-btn-flip" class="cam-flip-btn" type="button" aria-label="Trocar câmera">
+                    <i class="bi bi-arrow-repeat"></i>
+                </button>
+            </div>
+            <div class="cam-home-indicator"></div>
+        </footer>
+    </main>
+
+    <!-- =========================================================
+         TELA 2 — GALERIA (LL)
+         ========================================================= -->
+    <section id="gallery_screen" class="iilume-screen gallery-screen">
+        <header class="phone-header">
+            <button id="gallery-back-button" class="header-button" type="button" aria-label="Voltar para câmera">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18L9 12L15 6"></path>
+                </svg>
             </button>
+
+            <h1>Galeria IILUME</h1>
+
+            <button id="edit_button" class="edit-button" type="button">Editar</button>
+        </header>
+
+        <section class="main-photo">
+            <div id="gallery-empty-state" class="gallery-empty-state d-none">
+                <i class="bi bi-images"></i>
+                <p>Nenhuma imagem na galeria</p>
+            </div>
+            <img id="main_image" src="assets/images/gallery/foto1.jpg" alt="Foto selecionada">
+        </section>
+
+        <section id="thumbnail_container" class="thumbnails" aria-label="Miniaturas da galeria"></section>
+
+        <nav class="bottom-actions" aria-label="Ações da foto">
+            <button id="share_button" class="action-button" type="button" aria-label="Compartilhar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 16V4"></path>
+                    <path d="M7 9L12 4L17 9"></path>
+                    <path d="M5 14V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V14"></path>
+                </svg>
+            </button>
+
+            <button id="favorite_button" class="action-button" type="button" aria-label="Favoritar">
+                <svg id="heart_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M20.8 8.8C20.8 13.5 12 19 12 19S3.2 13.5 3.2 8.8C3.2 6.1 5.2 4 7.8 4C9.4 4 10.8 4.8 12 6.1C13.2 4.8 14.6 4 16.2 4C18.8 4 20.8 6.1 20.8 8.8Z"></path>
+                </svg>
+            </button>
+
+            <button id="info_button" class="action-button" type="button" aria-label="Informações">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 10V16"></path>
+                    <circle cx="12" cy="7" r="0.8" fill="currentColor"></circle>
+                </svg>
+            </button>
+
+            <button id="delete_button" class="action-button" type="button" aria-label="Excluir">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M4 7H20"></path>
+                    <path d="M9 7V4H15V7"></path>
+                    <path d="M7 7L8 20H16L17 7"></path>
+                </svg>
+            </button>
+        </nav>
+
+        <div class="home-indicator"></div>
+
+        <div id="photo_info" class="photo-info hidden" role="dialog" aria-live="polite">
+            <h2>Informações</h2>
+            <p id="photo_name">foto1.jpg</p>
+            <p>Imagem processada pelo IILUME</p>
         </div>
-
-        <div class="cam-home-indicator rounded-pill bg-white mt-2 opacity-50"></div>
-    </footer>
-
-</main>
-
-<section id="gallery_screen" class="iilume-screen gallery-screen">
-    <header class="phone-header">
-        <!-- Botão voltar -->
-        <button
-                id="back_button"
-                class="header-button"
-                aria-label="Voltar">
-            <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2">
-                <path
-                        d="M15 18L9 12L15 6">
-                </path>
-            </svg>
-        </button>
-
-        <!-- Título -->
-        <h1>
-            Galeria IILUME
-        </h1>
-
-        <!-- Editar -->
-        <button
-                id="edit_button"
-                class="edit-button">
-            Editar
-        </button>
-    </header>
-
-    <!-- FOTO PRINCIPAL -->
-    <section class="main-photo">
-        <img
-                id="main_image"
-                src="assets/images/gallery/foto1.jpg"
-                alt="Foto selecionada">
     </section>
 
-    <!-- MINIATURAS-->
-    <section
-            id="thumbnail_container"
-            class="thumbnails">
-    </section>
+    <!-- =========================================================
+         TELA 3 — EDITOR (CH)
+         ========================================================= -->
+    <main id="editor_screen" class="iilume-screen editor-screen">
+        <header class="editor-header">
+            <button id="editor-back-button" class="editor-back-button" type="button" aria-label="Voltar para galeria">
+                <i class="bi bi-arrow-left"></i>
+                <span>Galeria</span>
+            </button>
+            <div class="editor-header-brand">IILUME</div>
+            <div class="editor-header-spacer"></div>
+        </header>
 
-    <nav class="bottom-actions">
-        <!-- COMPARTILHAR -->
-        <button
-                id="share_button"
-                class="action-button"
-                aria-label="Compartilhar">
+        <div class="editor-content">
+            <div class="titulo-editor">
+                <div>
+                    <h1>Editor de <span>Imagens</span></h1>
+                    <p>Ajuste, transforme e crie novas versões com o poder da IA.</p>
+                </div>
+                <div class="frase-editor">“Mais que edições.<br>Novas perspectivas.”</div>
+            </div>
 
-            <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8">
-                <path
-                        d="M12 16V4">
-                </path>
-                <path
-                        d="M7 9L12 4L17 9">
-                </path>
-                <path
-                        d="M5 14V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V14">
-                </path>
-            </svg>
-        </button>
+            <div class="editor-principal">
+                <section class="area-imagem">
+                    <div class="barra-imagem">
+                        <button type="button" onclick="diminuirZoom()" aria-label="Diminuir zoom">−</button>
+                        <span id="valor-zoom">100%</span>
+                        <button type="button" onclick="aumentarZoom()" aria-label="Aumentar zoom">+</button>
+                    </div>
 
-        <!-- FAVORITO -->
-        <button
-                id="favorite_button"
-                class="action-button"
-                aria-label="Favoritar">
-            <svg
-                    id="heart_icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8">
-                <path
-                        d="M20.8 8.8C20.8 13.5 12 19 12 19S3.2 13.5 3.2 8.8C3.2 6.1 5.2 4 7.8 4C9.4 4 10.8 4.8 12 6.1C13.2 4.8 14.6 4 16.2 4C18.8 4 20.8 6.1 20.8 8.8Z">
-                </path>
-            </svg>
-        </button>
+                    <div class="imagem-container" id="editor-image-container">
+                        <div class="placeholder-imagem">
+                            <span>🖼️</span>
+                            <p>Sua imagem aparecerá aqui</p>
+                            <button type="button" class="btn-carregar-imagem" onclick="carregarImagem()">Carregar imagem</button>
+                        </div>
+                    </div>
+                </section>
 
-        <!-- INFORMAÇÕES -->
-        <button
-                id="info_button"
-                class="action-button"
-                aria-label="Informações">
-            <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8">
-                <circle
-                        cx="12"
-                        cy="12"
-                        r="9">
-                </circle>
-                <path
-                        d="M12 10V16">
-                </path>
-                <circle
-                        cx="12"
-                        cy="7"
-                        r="0.8"
-                        fill="currentColor">
-                </circle>
-            </svg>
-        </button>
+                <section class="ferramentas">
+                    <h2>Editar imagem</h2>
+                    <div class="cards-ferramentas">
+                        <button class="card-ferramenta" type="button" onclick="cortar()">
+                            <div class="icone-ferramenta"><i class="bi bi-crop"></i></div>
+                            <div class="texto-ferramenta"><h3>Cortar</h3><p>Ajuste e enquadre<br>sua imagem</p></div>
+                            <span class="seta-ferramenta">→</span>
+                        </button>
 
+                        <button class="card-ferramenta" type="button" onclick="rotacionar()">
+                            <div class="icone-ferramenta"><i class="bi bi-arrow-repeat"></i></div>
+                            <div class="texto-ferramenta"><h3>Rotacionar</h3><p>Gire sua imagem<br>como preferir</p></div>
+                            <span class="seta-ferramenta">→</span>
+                        </button>
 
-        <!-- EXCLUIR -->
-        <button
-                id="delete_button"
-                class="action-button"
-                aria-label="Excluir">
-            <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8">
-                <path
-                        d="M4 7H20">
-                </path>
-                <path
-                        d="M9 7V4H15V7">
-                </path>
-                <path
-                        d="M7 7L8 20H16L17 7">
-                </path>
-            </svg>
-        </button>
-    </nav>
+                        <button class="card-ferramenta" type="button" onclick="ajustar()">
+                            <div class="icone-ferramenta"><i class="bi bi-sliders"></i></div>
+                            <div class="texto-ferramenta"><h3>Ajustes</h3><p>Brilho, contraste<br>saturação e mais</p></div>
+                            <span class="seta-ferramenta">→</span>
+                        </button>
 
-    <!-- BARRA INFERIOR DO CELULAR-->
-    <div class="home-indicator"></div>
+                        <button class="card-ferramenta" type="button" onclick="aplicarFiltro()">
+                            <div class="icone-ferramenta"><i class="bi bi-circle-half"></i></div>
+                            <div class="texto-ferramenta"><h3>Filtros</h3><p>Aplique estilos únicos<br>com um clique</p></div>
+                            <span class="seta-ferramenta">→</span>
+                        </button>
 
-    <!-- INFORMAÇÕES DA FOTO-->
-    <div
-            id="photo_info"
-            class="photo-info hidden">
-        <h2>
-            Informações
-        </h2>
-        <p id="photo_name">
-            foto1.jpg
-        </p>
-        <p>
-            Imagem processada pelo IILUME
-        </p>
-    </div>
+                        <div class="card-ia">
+                            <div class="card-ia-conteudo">
+                                <span class="icone-ia">✦</span>
+                                <div><h3>Gerar versão com IA</h3><p>Deixe a IA criar novas versões da sua imagem</p></div>
+                            </div>
+                            <button class="botao-ia" type="button" onclick="salvarVersao()">✨ Gerar agora</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
 
-</section>
+            <section class="salvos">
+                <h2>Salvos pela IA</h2>
+                <p class="descricao">Escolha uma das versões processadas pela IA.</p>
+                <div class="versoes">
+                    <div class="versao"><div class="miniatura">Imagem 1</div><button type="button" onclick="selecionarVersao(this)">Selecionar</button></div>
+                    <div class="versao"><div class="miniatura">Imagem 2</div><button type="button" onclick="selecionarVersao(this)">Selecionar</button></div>
+                    <div class="versao"><div class="miniatura">Imagem 3</div><button type="button" onclick="selecionarVersao(this)">Selecionar</button></div>
+                </div>
+            </section>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <button class="btn-salvar-versao" type="button" onclick="salvarVersaoSelecionada()">💾 Salvar versão selecionada</button>
+        </div>
+    </main>
+</div>
+
 <script src="js/script.js"></script>
 </body>
 </html>
