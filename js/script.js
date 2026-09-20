@@ -473,6 +473,8 @@ selectPhoto(0);
 document.addEventListener("DOMContentLoaded", () => {
     const cameraScreen = document.getElementById("camera_screen");
     const galleryScreen = document.getElementById("gallery_screen");
+    const editorScreen = document.getElementById("editor_screen");
+const editButton = document.getElementById("edit_button");
     const backButton = document.getElementById("back_button");
     const cameraGalleryButton = document.querySelector(".cam-thumb-placeholder");
 
@@ -482,7 +484,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".iilume-screen").forEach((screen) => {
             screen.classList.remove("active");
         });
-
+document.getElementById("camera_screen")?.classList.remove("active");
+document.getElementById("gallery_screen")?.classList.remove("active");
+document.getElementById("editor_screen")?.classList.remove("active");
         screenToShow.classList.add("active");
     }
 
@@ -492,9 +496,807 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    if (editButton) {
+    editButton.addEventListener("click", () => {
+        showScreen(editorScreen);
+    });
+}
+
     if (backButton) {
         backButton.addEventListener("click", () => {
             showScreen(cameraScreen);
         });
     }
 });
+// ===== PESSOA 4 - EDITOR + SALVOS PELA IA =====
+
+let imagemAtual = null;
+let rotacaoAtual = 0;
+let filtroAtual = "none";
+
+function carregarImagem() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = function (evento) {
+        const arquivo = evento.target.files[0];
+
+        if (!arquivo) {
+            return;
+        }
+
+        const leitor = new FileReader();
+
+        leitor.onload = function (e) {
+            mostrarImagem(e.target.result);
+        };
+
+        leitor.readAsDataURL(arquivo);
+    };
+
+    input.click();
+}
+
+function mostrarImagem(src) {
+    const container = document.querySelector(".imagem-container");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    const imagem = document.createElement("img");
+
+    imagem.src = src;
+    imagem.id = "imagem-editavel";
+    imagem.alt = "Imagem selecionada";
+
+    imagem.style.maxWidth = "100%";
+    imagem.style.maxHeight = "300px";
+    imagem.style.objectFit = "contain";
+    imagem.style.transition = "0.3s";
+
+    container.appendChild(imagem);
+
+    imagemAtual = imagem;
+    rotacaoAtual = 0;
+    filtroAtual = "none";
+
+    atualizarImagem();
+}
+
+function atualizarImagem() {
+    if (!imagemAtual) {
+        return;
+    }
+
+  imagemAtual.style.transform = `rotate(${rotacaoAtual}deg) scale(${nivelZoom / 100})`;
+    imagemAtual.style.filter = filtroAtual;
+}
+
+function cortar() {
+    if (!imagemAtual) {
+        carregarImagem();
+        return;
+    }
+
+    const container = document.querySelector(".imagem-container");
+
+    // Evita abrir o modo de corte duas vezes
+    if (document.getElementById("area-corte")) {
+        return;
+    }
+
+    const areaCorte = document.createElement("div");
+    areaCorte.id = "area-corte";
+
+    areaCorte.style.position = "absolute";
+    areaCorte.style.top = "20%";
+    areaCorte.style.left = "20%";
+    areaCorte.style.width = "60%";
+    areaCorte.style.height = "60%";
+    areaCorte.style.border = "2px solid #c13cff";
+    areaCorte.style.boxShadow = "0 0 0 9999px rgba(0,0,0,0.45)";
+    areaCorte.style.zIndex = "20";
+    areaCorte.style.cursor = "move";
+   ["nw", "ne", "sw", "se"].forEach(posicao => {
+    const alca = document.createElement("div");
+
+    alca.className = "alca-corte";
+    alca.dataset.posicao = posicao;
+
+    alca.style.position = "absolute";
+    alca.style.width = "16px";
+    alca.style.height = "16px";
+    alca.style.background = "#c13cff";
+    alca.style.border = "2px solid white";
+    alca.style.borderRadius = "50%";
+    alca.style.zIndex = "25";
+
+    if (posicao.includes("n")) alca.style.top = "-8px";
+    if (posicao.includes("s")) alca.style.bottom = "-8px";
+    if (posicao.includes("w")) alca.style.left = "-8px";
+    if (posicao.includes("e")) alca.style.right = "-8px";
+
+    areaCorte.appendChild(alca);
+});
+
+const alcas = areaCorte.querySelectorAll(".alca-corte");
+
+alcas.forEach(alca => {
+    alca.addEventListener("mousedown", function (evento) {
+        evento.preventDefault();
+        evento.stopPropagation();
+
+        const posicao = alca.dataset.posicao;
+
+        const inicioX = evento.clientX;
+        const inicioY = evento.clientY;
+
+        const larguraInicial = areaCorte.offsetWidth;
+        const alturaInicial = areaCorte.offsetHeight;
+        const esquerdaInicial = areaCorte.offsetLeft;
+        const topoInicial = areaCorte.offsetTop;
+
+        function redimensionar(e) {
+            const dx = e.clientX - inicioX;
+            const dy = e.clientY - inicioY;
+
+            if (posicao.includes("e")) {
+                areaCorte.style.width =
+                    Math.max(60, larguraInicial + dx) + "px";
+            }
+
+            if (posicao.includes("s")) {
+                areaCorte.style.height =
+                    Math.max(60, alturaInicial + dy) + "px";
+            }
+
+            if (posicao.includes("w")) {
+                const novaLargura = Math.max(60, larguraInicial - dx);
+
+                areaCorte.style.width = novaLargura + "px";
+                areaCorte.style.left = esquerdaInicial + dx + "px";
+            }
+
+            if (posicao.includes("n")) {
+                const novaAltura = Math.max(60, alturaInicial - dy);
+
+                areaCorte.style.height = novaAltura + "px";
+                areaCorte.style.top = topoInicial + dy + "px";
+            }
+        }
+
+        function parar() {
+            document.removeEventListener("mousemove", redimensionar);
+            document.removeEventListener("mouseup", parar);
+        }
+
+        document.addEventListener("mousemove", redimensionar);
+        document.addEventListener("mouseup", parar);
+    });
+});
+    areaCorte.style.overflow = "hidden";
+
+    container.style.position = "relative";
+    container.appendChild(areaCorte);
+
+    const botoes = document.createElement("div");
+    botoes.id = "controles-corte";
+
+    botoes.style.position = "absolute";
+    botoes.style.bottom = "15px";
+    botoes.style.left = "50%";
+    botoes.style.transform = "translateX(-50%)";
+    botoes.style.display = "flex";
+    botoes.style.gap = "10px";
+    botoes.style.zIndex = "30";
+
+    botoes.innerHTML = `
+        <button id="cancelar-corte"
+            style="
+                padding:10px 18px;
+                border:1px solid #a855f7;
+                border-radius:8px;
+                background:#17103d;
+                color:white;
+                cursor:pointer;
+            ">
+            Cancelar
+        </button>
+
+        <button id="aplicar-corte"
+            style="
+                padding:10px 18px;
+                border:none;
+                border-radius:8px;
+                background:linear-gradient(90deg,#7b2cff,#c13cff);
+                color:white;
+                font-weight:bold;
+                cursor:pointer;
+            ">
+            ✓ Cortar
+        </button>
+    `;
+
+    container.appendChild(botoes);
+
+    document.getElementById("cancelar-corte").onclick = function () {
+        areaCorte.remove();
+        botoes.remove();
+    };
+
+    document.getElementById("aplicar-corte").onclick = function () {
+        const imagemRect = imagemAtual.getBoundingClientRect();
+        const corteRect = areaCorte.getBoundingClientRect();
+
+        const escalaX = imagemAtual.naturalWidth / imagemRect.width;
+        const escalaY = imagemAtual.naturalHeight / imagemRect.height;
+
+        const x = Math.max(0, (corteRect.left - imagemRect.left) * escalaX);
+        const y = Math.max(0, (corteRect.top - imagemRect.top) * escalaY);
+
+        const largura = Math.min(
+            corteRect.width * escalaX,
+            imagemAtual.naturalWidth - x
+        );
+
+        const altura = Math.min(
+            corteRect.height * escalaY,
+            imagemAtual.naturalHeight - y
+        );
+
+        if (largura <= 0 || altura <= 0) {
+            alert("Posicione a área de corte sobre a imagem.");
+            return;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = largura;
+        canvas.height = altura;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(
+            imagemAtual,
+            x,
+            y,
+            largura,
+            altura,
+            0,
+            0,
+            largura,
+            altura
+        );
+
+        imagemAtual.src = canvas.toDataURL("image/png");
+
+        areaCorte.remove();
+        botoes.remove();
+    };
+}
+
+function rotacionar() {
+    if (!imagemAtual) {
+        carregarImagem();
+        return;
+    }
+
+    let painel = document.getElementById("painel-rotacao");
+
+    if (painel) {
+        painel.remove();
+    }
+
+    painel = document.createElement("div");
+    painel.id = "painel-rotacao";
+
+    painel.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            width: 300px;
+            padding: 20px;
+            border-radius: 16px;
+            background: #11072b;
+            border: 1px solid #a855f7;
+            box-shadow: 0 0 25px rgba(168,85,247,0.5);
+            color: white;
+        ">
+
+            <h2 style="margin-bottom:18px;">
+                🔄 Rotacionar imagem
+            </h2>
+
+            <div style="
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:10px;
+            ">
+
+                <button id="girar-esquerda" style="
+                    padding:14px;
+                    border:1px solid #a855f7;
+                    border-radius:10px;
+                    background:#17103d;
+                    color:white;
+                    cursor:pointer;
+                ">
+                    ↶ Esquerda
+                </button>
+
+                <button id="girar-direita" style="
+                    padding:14px;
+                    border:1px solid #a855f7;
+                    border-radius:10px;
+                    background:#17103d;
+                    color:white;
+                    cursor:pointer;
+                ">
+                    ↷ Direita
+                </button>
+
+                <button id="girar-180" style="
+                    padding:14px;
+                    border:1px solid #a855f7;
+                    border-radius:10px;
+                    background:#17103d;
+                    color:white;
+                    cursor:pointer;
+                ">
+                    ↻ 180°
+                </button>
+
+                <button id="resetar-rotacao" style="
+                    padding:14px;
+                    border:1px solid #a855f7;
+                    border-radius:10px;
+                    background:#17103d;
+                    color:white;
+                    cursor:pointer;
+                ">
+                    ↺ Resetar
+                </button>
+
+            </div>
+
+            <button id="fechar-rotacao" style="
+                width:100%;
+                margin-top:14px;
+                padding:12px;
+                border:none;
+                border-radius:10px;
+                background:linear-gradient(90deg,#7b2cff,#c13cff);
+                color:white;
+                font-weight:bold;
+                cursor:pointer;
+            ">
+                ✓ Aplicar e fechar
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(painel);
+
+    document.getElementById("girar-esquerda").addEventListener("click", function () {
+        rotacaoAtual -= 90;
+        atualizarImagem();
+    });
+
+    document.getElementById("girar-direita").addEventListener("click", function () {
+        rotacaoAtual += 90;
+        atualizarImagem();
+    });
+
+    document.getElementById("girar-180").addEventListener("click", function () {
+        rotacaoAtual += 180;
+        atualizarImagem();
+    });
+
+    document.getElementById("resetar-rotacao").addEventListener("click", function () {
+        rotacaoAtual = 0;
+        atualizarImagem();
+    });
+
+    document.getElementById("fechar-rotacao").addEventListener("click", function () {
+        painel.remove();
+    });
+}
+
+   function ajustar() {
+    if (!imagemAtual) {
+        carregarImagem();
+        return;
+    }
+
+    let painel = document.getElementById("painel-ajustes");
+
+    if (painel) {
+        painel.remove();
+    }
+
+    painel = document.createElement("div");
+    painel.id = "painel-ajustes";
+
+    painel.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 360px;
+            padding: 25px;
+            background: #10082b;
+            border: 1px solid #a855f7;
+            border-radius: 18px;
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.5);
+            z-index: 9999;
+            color: white;
+        ">
+
+            <h2 style="margin-bottom: 25px;">
+                ✨ Ajustes da imagem
+            </h2>
+
+            <label>
+                ☀️ Brilho:
+                <strong id="valor-brilho">100%</strong>
+            </label>
+
+            <input
+                id="slider-brilho"
+                type="range"
+                min="50"
+                max="150"
+                value="100"
+                style="width: 100%;"
+            >
+
+            <br><br>
+
+            <label>
+                ◐ Contraste:
+                <strong id="valor-contraste">100%</strong>
+            </label>
+
+            <input
+                id="slider-contraste"
+                type="range"
+                min="50"
+                max="150"
+                value="100"
+                style="width: 100%;"
+            >
+
+            <br><br>
+
+            <button
+                id="fechar-ajustes"
+                style="
+                    width: 100%;
+                    padding: 12px;
+                    border: none;
+                    border-radius: 10px;
+                    background: linear-gradient(90deg, #7b2cff, #c13cff);
+                    color: white;
+                    font-weight: bold;
+                    cursor: pointer;
+                "
+            >
+                ✓ Aplicar ajustes
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(painel);
+
+    const sliderBrilho = document.getElementById("slider-brilho");
+    const sliderContraste = document.getElementById("slider-contraste");
+
+    const valorBrilho = document.getElementById("valor-brilho");
+    const valorContraste = document.getElementById("valor-contraste");
+
+    function atualizarAjustes() {
+        const brilho = sliderBrilho.value;
+        const contraste = sliderContraste.value;
+
+        valorBrilho.textContent = brilho + "%";
+        valorContraste.textContent = contraste + "%";
+
+        filtroAtual = `brightness(${brilho}%) contrast(${contraste}%)`;
+
+        imagemAtual.style.filter = filtroAtual;
+    }
+
+    sliderBrilho.addEventListener("input", atualizarAjustes);
+    sliderContraste.addEventListener("input", atualizarAjustes);
+
+    document.getElementById("fechar-ajustes").addEventListener("click", function () {
+        painel.remove();
+    });
+} 
+
+function aplicarFiltro() {
+    if (!imagemAtual) {
+        carregarImagem();
+        return;
+    }
+
+    const painel = document.createElement("div");
+
+    painel.style.position = "fixed";
+    painel.style.top = "50%";
+    painel.style.left = "50%";
+    painel.style.transform = "translate(-50%, -50%)";
+    painel.style.width = "360px";
+    painel.style.padding = "25px";
+    painel.style.background = "#0e082b";
+    painel.style.border = "1px solid #a855f7";
+    painel.style.borderRadius = "18px";
+    painel.style.boxShadow = "0 0 35px rgba(168, 85, 247, 0.5)";
+    painel.style.zIndex = "9999";
+    painel.style.color = "white";
+
+    painel.innerHTML = `
+        <h2 style="
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+        ">
+            ✨ Filtros da imagem
+        </h2>
+
+        <div style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        ">
+
+            <button class="filtro-opcao" data-filtro="none">
+                🖼️ Original
+            </button>
+
+            <button class="filtro-opcao" data-filtro="grayscale(100%)">
+                ⚫ Preto e branco
+            </button>
+
+            <button class="filtro-opcao" data-filtro="sepia(100%)">
+                🟤 Sépia
+            </button>
+
+            <button class="filtro-opcao" data-filtro="contrast(150%)">
+                ◐ Contraste
+            </button>
+
+            <button class="filtro-opcao" data-filtro="brightness(120%) saturate(140%)">
+                ☀️ Vibrante
+            </button>
+
+            <button class="filtro-opcao" data-filtro="hue-rotate(180deg)">
+                🔵 Frio
+            </button>
+
+        </div>
+
+        <button id="fechar-filtros" style="
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #7b2cff, #c13cff);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        ">
+            ✓ Aplicar e fechar
+        </button>
+    `;
+
+    document.body.appendChild(painel);
+
+    const botoesFiltro = painel.querySelectorAll(".filtro-opcao");
+
+    botoesFiltro.forEach(function(botao) {
+
+        botao.style.padding = "15px 10px";
+        botao.style.border = "1px solid #a855f7";
+        botao.style.borderRadius = "10px";
+        botao.style.background = "#17103d";
+        botao.style.color = "white";
+        botao.style.cursor = "pointer";
+        botao.style.fontWeight = "bold";
+
+        botao.addEventListener("mouseenter", function() {
+            botao.style.background = "#7b2cff";
+            botao.style.transform = "translateY(-2px)";
+        });
+
+        botao.addEventListener("mouseleave", function() {
+            botao.style.background = "#17103d";
+            botao.style.transform = "translateY(0)";
+        });
+
+        botao.addEventListener("click", function() {
+
+            filtroAtual = botao.dataset.filtro;
+
+            imagemAtual.style.filter = filtroAtual;
+
+            botoesFiltro.forEach(function(b) {
+                b.style.border = "1px solid #a855f7";
+            });
+
+            botao.style.border = "2px solid white";
+        });
+    });
+
+    document.getElementById("fechar-filtros").addEventListener("click", function() {
+        painel.remove();
+    });
+}
+
+function salvarVersao() {
+    if (!imagemAtual) {
+        alert("Primeiro selecione uma imagem.");
+        return;
+    }
+
+    const versoes = document.querySelectorAll(".versoes .versao");
+
+    if (versoes.length === 0) {
+        return;
+    }
+
+    let versaoEncontrada = false;
+
+    for (let i = 0; i < versoes.length; i++) {
+        const miniatura = versoes[i].querySelector(".miniatura");
+
+        if (miniatura && !miniatura.querySelector("img")) {
+
+            let filtro = "none";
+
+           if (i === 0) {
+    filtro = "grayscale(100%)";
+} else if (i === 1) {
+    filtro = "sepia(70%)";
+} else if (i === 2) {
+    filtro = "contrast(150%)";
+}   
+            miniatura.innerHTML = `
+                <img src="${imagemAtual.src}"
+                     alt="Versão processada pela IA"
+                     style="width:100%; height:100%; object-fit:cover; filter:${filtro};">
+            `;
+
+            versaoEncontrada = true;
+           
+        }
+    }
+
+    if (!versaoEncontrada) {
+        const novaVersao = document.createElement("div");
+
+        novaVersao.className = "versao";
+
+        novaVersao.innerHTML = `
+            <div class="miniatura">
+                <img src="${imagemAtual.src}"
+                     alt="Nova versão processada pela IA"
+                     style="width:100%; height:100%; object-fit:cover; filter:contrast(120%);">
+            </div>
+
+            <button onclick="selecionarVersao(this)">
+                Selecionar
+            </button>
+        `;
+
+        document.querySelector(".versoes").appendChild(novaVersao);
+    }
+
+    alert("✨ Nova versão processada pela IA foi criada!");
+}
+
+function selecionarVersao(botao) {
+    const botoes = document.querySelectorAll(".versoes button");
+    const versoes = document.querySelectorAll(".versoes .versao");
+
+    botoes.forEach(function (b) {
+        b.textContent = "Selecionar";
+    });
+
+    versoes.forEach(function (versao) {
+        versao.classList.remove("selecionada");
+    });
+
+    botao.textContent = "✓ Selecionada";
+
+    const versaoSelecionada = botao.closest(".versao");
+
+    if (versaoSelecionada) {
+        versaoSelecionada.classList.add("selecionada");
+    }
+
+    alert("Versão selecionada para salvar!");
+}
+// ===== ZOOM DA IMAGEM =====
+
+let nivelZoom = 100;
+
+function atualizarZoom() {
+    if (!imagemAtual) {
+        return;
+    }
+
+    imagemAtual.style.transform = `rotate(${rotacaoAtual}deg) scale(${nivelZoom / 100})`;
+
+    const valorZoom = document.getElementById("valor-zoom");
+    valorZoom.textContent = nivelZoom + "%";
+}
+
+function aumentarZoom() {
+    if (!imagemAtual) {
+        alert("Selecione uma imagem primeiro.");
+        return;
+    }
+
+    if (nivelZoom < 200) {
+        nivelZoom += 10;
+        atualizarZoom();
+    }
+}
+
+function diminuirZoom() {
+    if (!imagemAtual) {
+        alert("Selecione uma imagem primeiro.");
+        return;
+    }
+
+    if (nivelZoom > 50) {
+        nivelZoom -= 10;
+        atualizarZoom();
+    }
+}
+// ===== SALVAR VERSÃO SELECIONADA =====
+
+// ===== SALVAR VERSÃO SELECIONADA =====
+
+function salvarVersaoSelecionada() {
+    const versaoSelecionada = document.querySelector(".versao.selecionada");
+
+    if (!versaoSelecionada) {
+        alert("Selecione uma versão antes de salvar.");
+        return;
+    }
+
+    const imagem = versaoSelecionada.querySelector(".miniatura img");
+
+    if (!imagem) {
+        alert("Gere uma versão com IA primeiro.");
+        return;
+    }
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = imagem.naturalWidth;
+    canvas.height = imagem.naturalHeight;
+
+    ctx.filter = imagem.style.filter || "none";
+    ctx.drawImage(imagem, 0, 0, canvas.width, canvas.height);
+
+    const link = document.createElement("a");
+    link.download = "ILLUME-versao.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+
+    alert("Versão salva com sucesso!");
+}
